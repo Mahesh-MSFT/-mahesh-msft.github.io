@@ -9,8 +9,6 @@ tags:
   - Bastion
 ---
 
-# Work with private AKS cluster using Azure Bastion and Azure DevOps Services
-
 ## Introduction
 
 Private AKS cluster enables communication with Kubernetes API server over [Azure Private Link]. Private communication helps many customers meet key security requirement. However, it brings additional changes for local development. Some upfront planning is needed to connect and interact with private AKS cluster from local development environment (e.g IDE or CLI). It's possible to connect with private AKS cluster and manage applications using [available guidance]. This article discusses an additional option to work with private AKS cluster.
@@ -32,9 +30,9 @@ Process follows key activities as discussed below.
 1. IT admin or cloud operator retrieves either `kubeconfig` content or `service account` details from private AKS cluster through Azure Bastion Host and use it to create a Kubernetes Service Connection in Azure DevOps Services.
 1. Developers use Azure DevOps Services CI/CD pipeline using Kubernetes Service Connection to deploy applications in private AKS cluster. Developers get full visibility into private AKS cluster through Azure DevOps Services.
 
-Steps 1,2 and 3 are one time setup. Once set, developers can interact with private AKS cluster throughput its lifecycle. This approach uses private AKS compute resources for running build agent. Build agent is used to drive CI/CD pipeline. Using private AKS compute resources offers following benefits. 
+Steps 1,2 and 3 are one time setup. Once set, developers can interact with private AKS cluster throughput its lifecycle. This approach uses private AKS compute resources for running build agent. Build agent is used to drive CI/CD pipeline. Using private AKS compute resources offers following benefits.
 
-* No need for new build agent VMs 
+* No need for new build agent VMs
 * No need for Virtual Network peering
 * No need for Hub and Spoke network implementation
 
@@ -86,6 +84,7 @@ Container image can be built from developer workstation. Process of creating Azu
 ## Push container image to Azure Container Registry
 
  Container image can be pushed from developer workstation in following ways.
+
 * Use IDE extension such as [Docker for Visual Studio Code]
 * Run CLI command as shown below.
 
@@ -151,7 +150,8 @@ Output should be similar as shown below.
 NAME                                 READY   STATUS    RESTARTS   AGE
 <ADO-BUILD-AGENT-POD>                1/1     Running   0          20s
 ```
-Navigate to newly created agent pool in step [Create a new Agent Pool and Personal Access Token (PAT)](#create-a-new-agent-pool-and-personal-access-token-pat). Click on "Agents" tab. Verify that build agent pod is listed with "Online" status. 
+
+Navigate to newly created agent pool in step [Create a new Agent Pool and Personal Access Token (PAT)](#create-a-new-agent-pool-and-personal-access-token-pat). Click on "Agents" tab. Verify that build agent pod is listed with "Online" status.
 
 ## Create a new Kubernetes Service Connection
 
@@ -198,7 +198,7 @@ Select the repository source and name. Depending on type of pipeline creation, f
 
 For both types of pipelines, provide Kubernetes service connection as created in step [Create a new Kubernetes Service Connection in Azure DevOps Services](#create-a-new-kubernetes-service-connection).
 
-For the kubectl task, select appropriate "command" from the drop-down list and configure corresponding "Arguments". For the deployments that use kubernetes manifest files checked in source code, `apply` will be appropriate command with `-f `as "argument" and relative manifest file path such as `$(System.DefaultWorkingDirectory)/manifests/<YOUR-MANIFEST-FILE>.yml`
+For the kubectl task, select appropriate "command" from the drop-down list and configure corresponding "Arguments". For the deployments that use kubernetes manifest files checked in source code, `apply` will be appropriate command with `-f`as "argument" and relative manifest file path such as `$(System.DefaultWorkingDirectory)/manifests/<YOUR-MANIFEST-FILE>.yml`
 
 ## Deploy applications to private AKS
 
