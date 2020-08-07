@@ -23,7 +23,7 @@ Private AKS cluster enables communication with Kubernetes API server over [Azure
 
 This article discusses combined use of Azure Bastion and Azure DevOps Services capabilities. An overview of approach is shown below.
 
-![workflow](media/private-clusters/privateaksdevops.png)
+![workflow](assets/aks/privateaksdevops.png)
 
 Process follows key activities as discussed below.
 
