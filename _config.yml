@@ -58,7 +58,7 @@ plugins:
 author:
   name   : "Mahesh Kshirsagar"
   avatar : "/assets/images/MyPhoto.jpg"
-  bio    : "I enjoy seeing people succeed with Microsoft technologies."
+  bio    : "I help people succeed with Azure."
   links:
     - label: "Website"
       icon: "fas fa-fw fa-link"
