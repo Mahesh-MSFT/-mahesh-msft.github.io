@@ -34,6 +34,99 @@ Azure Front Door provides secure entry point in Azure. It is a global HTTP load 
 
 ## Sample application
 
-This post will cover creating a Java application with a known SQL injection vulnerability. This application will be deployed as a service controller on Azure Kubernetes Service (AKS). AKS Service controller will have a private IP address which will be reachable via Azure Firewall, Azure Application Gateway and Azure Front Door. Application architecture will look like below.
+This post will cover creating a Java application with a known SQL injection vulnerability. This application will be deployed as a service controller on Azure Kubernetes Service (AKS). AKS Service controller will be deployed behind an internal load balancer with a private IP address. Application architecture will look like below.
 
-![design](/assets/aks/privateaksdevops.png)
+![design](/assets/aks/firewallpost.jpg)
+
+An user request traversal for Azure Firewall, Azure Application Gateway and Azure Front Door is described below.
+
+### Azure Firewall traversal
+
+Azure Firewall traversal consists of following.
+
+1. User request arrives at a public IP address.
+1. Azure Firewall has a NAT rule to route the incoming request to private address of Azure Internal Load Balancer associated with Service controller in AKS.
+1. An Azure User Defined Route (UDR) is created with Azure Firewall as "Next Hop". This UDR is associated with subnet containing AKS cluster.
+1. Azure Firewall has Network and Application rules created to allow egress traffic originating from AKS cluster.
+
+### Azure Application Gateway traversal
+
+Azure Application Gateway traversal consists of following.
+
+1. User request arrives at a public IP address which is configured as a front-end IP address for Azure Application Gateway.
+1. Azure Application Gateway is configured with *Prevention* as Firewall mode.
+1. Azure Application Gateway has a HTTP probe created for Azure Internal Load Balancer inside AKS subnet.
+
+### Azure Front Door traversal
+
+Azure Front Door traversal consists of following.
+
+1. User request arrives at a public IP address which is configured as a backend address for Azure Front Door.
+1. XXXX.
+1. Azure Front Door has a WAF Policy created with *Prevention* mode.
+1. WAF Policy associated with Azure Front Door has Azure Managed Rule Set assigned to it.
+1. WAF Policy with Azure Managed Rule Set is applied to the Azure Front Door front endpoint.
+
+## SQL Injection vulnerability
+
+Sample application is created with known SQL injection vulnerability. Application has components as described below.
+
+### HTML Page
+
+HTML page is configured to POST form data to a Java Servlet
+
+```HTML
+<form name="frmLogin" method="POST" action="LoginServlet">
+        <table>
+            <tr>
+                <td>Username</td>
+                <td><input type="text" name="username"></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><input type="password" name="password"></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button type="submit">Login</button></td>
+            </tr>
+        </table>
+    </form>
+```
+
+### Servlet
+
+Java Servlet accepts the FORM data. It extracts the username and password fields. It further connects with MySQL database. Using username and password, it issues a query against table.
+
+```java
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        boolean success = false;
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        // Password =  ' or '1'='1
+        String query = "select * from tblUser where username='" + username + "' and password = '" + password + "'";
+        Connection conn = null;
+        Statement stmt = null;
+        try {
+            conn = DriverManager.getConnection("jdbc:mysql://mysqlsvc:3306/userDB", "root", "root");
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            if (rs.next()) {
+                // Login Successful if match is found
+                success = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                stmt.close();
+                conn.close();
+            } catch (Exception e) {}
+        }
+        if (success) {
+            response.sendRedirect("home.html");
+        } else {
+            response.sendRedirect("unauth.html");
+        }
+    }
+```
