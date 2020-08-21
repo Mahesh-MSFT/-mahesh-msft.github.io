@@ -95,15 +95,19 @@ HTML page is configured to POST form data to a Java Servlet
 
 ### Servlet
 
-Java Servlet accepts the FORM data. It extracts the username and password fields. It further connects with MySQL database. Using username and password, it issues a query against table.
+Java Servlet accepts the FORM data. It extracts the username and password fields as shown below.
 
 ```java
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         boolean success = false;
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        // Password =  ' or '1'='1
+```
+
+It further connects with MySQL database. Using username and password, it issues a query against table.
+
+```java
         String query = "select * from tblUser where username='" + username + "' and password = '" + password + "'";
         Connection conn = null;
         Statement stmt = null;
@@ -130,3 +134,168 @@ Java Servlet accepts the FORM data. It extracts the username and password fields
         }
     }
 ```
+
+If query returns any record from table then login is considered successful. If login is successful the users are navigated to *home* page else they will be navigated to *unauth* page.
+
+username and password are
+> Note that MySQL database is also running as a service controller in AKS. Java Servlet Connectionstring uses the Service name for MySQL.
+
+### Dockerfile
+
+Java Servlet as well as MySQL database are *containerized* using following dockerfiles respectively.
+
+```dockerfile
+FROM maven:3.5-jdk-8 as BUILD
+  
+COPY src /usr/src/sji/src
+COPY pom.xml /usr/src/sji
+RUN mvn -f /usr/src/sji/pom.xml clean package
+RUN mvn -f /usr/src/sji/pom.xml install package
+
+FROM tomcat:jdk8-openjdk
+WORKDIR /
+
+COPY --from=build /usr/src/sji/target/jsi.war /usr/local/tomcat/webapps/jsi.war
+
+EXPOSE 80
+
+CMD ["catalina.sh", "run"]
+```
+
+```dockerfile
+# Derived from official mysql image (our base image)
+FROM mysql:latest
+
+# Add a database
+ENV MYSQL_DATABASE userDB
+ENV MYSQL_ROOT_PASSWORD root
+
+# Add the content of the sql-scripts/ directory to your image
+# All scripts in docker-entrypoint-initdb.d/ are automatically
+# executed during container startup
+COPY ./sql-scripts/ /docker-entrypoint-initdb.d/
+```
+
+### Kubernetes manifests
+
+Java Servlet and MySQL are deployed to AKS using following manifests.
+
+```yml
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: <YOUR-REPO>.azurecr.io/mysql:latest
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+                secretKeyRef:
+                  name: mysqlsecret
+                  key: mysqlpassword
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+      - name: mysql-initdb
+        configMap:
+          name: mysql-init-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqlsvc
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
+  clusterIP: None
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jsi
+spec:
+  selector:
+    matchLabels:
+      app: jsi
+  template:
+    metadata:
+      labels:
+        app: jsi
+    spec:
+      containers:
+      - name: jsi
+        image: <YOUR-REPO>.azurecr.io/jsi:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jsi
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+spec:
+  selector:
+    app: jsi
+  type: LoadBalancer
+  loadBalancerIP: 10.42.1.100
+  ports:
+  - port: 80
+    targetPort: 8080
+```
+
+## Testing with Azure Firewall
+
+Azure Firewall has a NAT rule configured that routes incoming requests on its public IP address to private IP address of Azure internal load balancer in AKS subnet.
+
+```azurecli
+az network firewall nat-rule create -g $RG -f $FWNAME `
+    --collection-name 'aksfwnatr' -n 'inboundtcp' --protocols 'TCP' --source-addresses '*' `
+    --action Dnat  --priority 100 `
+    --destination-addresses $FWPUBLIC_IP --destination-ports 80 `
+    --translated-address '10.42.1.100' --translated-port 80
+```
+
+Navigation to Azure Firewall's public IP address loads application as show below.
+
+![fwload](/assets/aks/aksload.png)
+
+If user enters any username and following password that initiates SQL injection then login is considered successful. 
+
+```XML
+ ' or '1'='1
+```
+
+User is promptly navigated to *home* page as shown below.
+
+![afwhome](/assets/aks/afwhome.png).
+
+This outcome is expected. Azure Firewall does not provide Web Application Firewall (WAF) capability. Azure Firewall provides inbound protection for non-HTTP/S protocols. Azure Firewall should be used to protecting incoming traffic over RDP, FTP and SSH protocols.
