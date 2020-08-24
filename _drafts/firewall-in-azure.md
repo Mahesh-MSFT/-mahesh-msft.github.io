@@ -7,10 +7,9 @@ tags:
   - Azure Firewall
   - Azure Application Gateway
   - Azure Front Door
-  - NVA
 ---
 
-Azure has multiple services providing firewall capabilities. Features provided by these services are well documented. Many enterprises have separate security and development teams. It is common for enterprise security teams to mandate an Azure service that provides firewall capability as part of architecture for an application. This post will help enterprise security teams make an informed decision on choosing right firewall service for applications running on Azure.
+Azure has multiple services providing firewall capabilities. Features provided by these services are well documented. However, seeing these capabilities in action can help  evaluate each service before making a decision. This post will use a SQL injection attack to showcase firewall capabilities.
 
 Below are three key Azure services that provide firewall services.
 
@@ -38,38 +37,40 @@ This post will cover creating a Java application with a known SQL injection vuln
 
 ![design](/assets/aks/firewallpost.jpg)
 
-An user request traversal for Azure Firewall, Azure Application Gateway and Azure Front Door is described below.
+An user request flow for Azure Firewall, Azure Application Gateway and Azure Front Door is described below.
 
-### Azure Firewall traversal
+### Azure Firewall request flow
 
-Azure Firewall traversal consists of following.
+Azure Firewall request flow consists of following.
 
 1. User request arrives at a public IP address.
 1. Azure Firewall has a NAT rule to route the incoming request to private address of Azure Internal Load Balancer associated with Service controller in AKS.
 1. An Azure User Defined Route (UDR) is created with Azure Firewall as "Next Hop". This UDR is associated with subnet containing AKS cluster.
 1. Azure Firewall has Network and Application rules created to allow egress traffic originating from AKS cluster.
 
-### Azure Application Gateway traversal
+### Azure Application Gateway request flow
 
-Azure Application Gateway traversal consists of following.
+Azure Application Gateway request flow consists of following.
 
 1. User request arrives at a public IP address which is configured as a front-end IP address for Azure Application Gateway.
 1. Azure Application Gateway is configured with *Prevention* as Firewall mode.
 1. Azure Application Gateway has a HTTP probe created for Azure Internal Load Balancer inside AKS subnet.
 
-### Azure Front Door traversal
+### Azure Front Door request flow
 
-Azure Front Door traversal consists of following.
+Azure Front Door request flow consists of following.
 
 1. User request arrives at a public IP address which is configured as a backend address for Azure Front Door.
-1. XXXX.
+1. Azure Front Door uses public IP or any publically routable DNS address as it's backend. In this example, Azure Front Door is using Azure Firewall's public IP as a backend.
 1. Azure Front Door has a WAF Policy created with *Prevention* mode.
 1. WAF Policy associated with Azure Front Door has Azure Managed Rule Set assigned to it.
 1. WAF Policy with Azure Managed Rule Set is applied to the Azure Front Door front endpoint.
 
 ## SQL Injection vulnerability
 
-Sample application is created with known SQL injection vulnerability. Application has components as described below.
+Sample application is written using Java Servlet. It has a known SQL injection vulnerability. Application has components as described below.
+
+> This post has used Java Servlet with SQL injection for demo purpose only. This does not imply that Java Servlet has this vulnerability. Java Servlet is a mature platform and has platform features to prevent SQL injection.
 
 ### HTML Page
 
@@ -105,7 +106,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         String password = request.getParameter("password");
 ```
 
-It further connects with MySQL database. Using username and password, it issues a query against table.
+It further connects with MySQL database. A query using username and password is made against database table.
 
 ```java
         String query = "select * from tblUser where username='" + username + "' and password = '" + password + "'";
@@ -135,10 +136,9 @@ It further connects with MySQL database. Using username and password, it issues 
     }
 ```
 
-If query fetches any record from table then login is considered successful. If login is successful the users are navigated to *home* page else they will be navigated to *unauth* page.
+If query fetches any record from table then login is considered as successful. If login is successful then users are navigated to *home* page else they will be navigated to *unauth* page.
 
-username and password are
-> Note that MySQL database is also running as a service controller in AKS. Java Servlet Connectionstring uses the Service name for MySQL.
+> MySQL database is also running as a Service controller in AKS. Java Servlet Connectionstring uses the Service controller name for MySQL connectivity.
 
 ### Dockerfile
 
@@ -374,8 +374,12 @@ az network front-door update `
     --name $AFD_NAME `
     --set FrontendEndpoints[0].WebApplicationFirewallPolicyLink.id=/subscriptions/$SUB_ID/resourcegroups/$RG/providers/Microsoft.Network/frontdoorwebapplicationfirewallpolicies/$AFD_POLICY_NAME 
 ```
-When a user navigates to Azure Front Door front address (e.g [YOUR-AFD-NAME].azurefd,net) application login page shown.
+When a user navigates to Azure Front Door front address (e.g [YOUR-AFD-NAME].azurefd.net) application login page is shown.
 
 If user enters password `' or '1'='1` that initiates SQL injection attack, a request blocked page is shown as below.
 
 ![afdblocked](/assets/aks/afdblocked.png)
+
+Azure Front Door has blocked the request which had SQL injection script in it.
+
+## Summary
