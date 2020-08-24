@@ -163,14 +163,14 @@ CMD ["catalina.sh", "run"]
 ```
 
 ```dockerfile
-# Derived from official mysql image (our base image)
+# Derived from mysql base image
 FROM mysql:latest
 
 # Add a database
 ENV MYSQL_DATABASE userDB
 ENV MYSQL_ROOT_PASSWORD root
 
-# Add the content of the sql-scripts/ directory to your image
+# Add the content of the sql-scripts/ directory to image
 # All scripts in docker-entrypoint-initdb.d/ are automatically
 # executed during container startup
 COPY ./sql-scripts/ /docker-entrypoint-initdb.d/
@@ -288,13 +288,19 @@ Navigation to Azure Firewall's public IP address loads application as show below
 
 ![fwload](/assets/aks/aksload.png)
 
-If user enters any username and following password that initiates SQL injection then login is considered successful.
+User enters any username and following password.
 
-```XML
+```sql
  ' or '1'='1
 ```
 
-User is promptly navigated to *home* page as shown below.
+This password gets *injected* into SQL query as shown below.
+
+```sql
+select * from tblUser where username='dummy' and password = '' or '1'='1'
+```
+
+SQL query gets evaluated to *true* because of the `1=1` condition. User is promptly navigated to *home* page as shown below.
 
 ![afwhome](/assets/aks/afwhome.png).
 
@@ -374,6 +380,7 @@ az network front-door update `
     --name $AFD_NAME `
     --set FrontendEndpoints[0].WebApplicationFirewallPolicyLink.id=/subscriptions/$SUB_ID/resourcegroups/$RG/providers/Microsoft.Network/frontdoorwebapplicationfirewallpolicies/$AFD_POLICY_NAME 
 ```
+
 When a user navigates to Azure Front Door front address (e.g [YOUR-AFD-NAME].azurefd.net) application login page is shown.
 
 If user enters password `' or '1'='1` that initiates SQL injection attack, a request blocked page is shown as below.
@@ -383,3 +390,13 @@ If user enters password `' or '1'='1` that initiates SQL injection attack, a req
 Azure Front Door has blocked the request which had SQL injection script in it.
 
 ## Summary
+
+Azure Firewall provides firewall capabilities for non-HTTP ingress traffic. For HTTP ingress traffic use Azure Application Gateway or Azure Front Door. Azure Front Door needs a public IP or a publically routable DNS address as it's backend. Azure Application Gateway can use private IP address as it's backend.
+
+## Additional resources
+
+* [SQL Injection in Java and How to Easily Prevent it
+](https://www.journaldev.com/34028/sql-injection-in-java#java-sql-injection-example)
+* [Azure Firewall FAQ](https://docs.microsoft.com/en-us/azure/firewall/firewall-faq)
+* [Frequently asked questions about Application Gateway](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-faq)
+* [Frequently asked questions for Azure Front Door](https://docs.microsoft.com/en-us/azure/frontdoor/front-door-faq)
