@@ -135,7 +135,7 @@ It further connects with MySQL database. Using username and password, it issues 
     }
 ```
 
-If query returns any record from table then login is considered successful. If login is successful the users are navigated to *home* page else they will be navigated to *unauth* page.
+If query fetches any record from table then login is considered successful. If login is successful the users are navigated to *home* page else they will be navigated to *unauth* page.
 
 username and password are
 > Note that MySQL database is also running as a service controller in AKS. Java Servlet Connectionstring uses the Service name for MySQL.
@@ -332,3 +332,50 @@ However, if user enters password `' or '1'='1` that initiates SQL injection atta
 
 ![agwerror](/assets/aks/agwerror.png)
 
+Azure Application Gateway has intercepted the SQL injection. Instead of navigating user to *Home* page, an error page is shown to user.
+
+## Testing with Azure Front Door
+
+Azure Front Door is configured with Azure Firewall's public IP as its backend address. It is not necessary to use Azure Firewall. Azure Front Door can use any public IP or publically routable DNS address as its backend.
+
+```azurecli
+az network front-door create `
+    --resource-group $RG `
+    --name $AFD_NAME `
+    --backend-address $FWPUBLIC_IP `
+    --path /jsi
+```
+
+A WAF policy is created and configured in *Prevention* mode.
+
+```azurecli
+az network front-door waf-policy create `
+    --resource-group $RG `
+    --name $AFD_POLICY_NAME `
+    --mode "Prevention" `
+    --disabled False
+```
+
+Azure Front Door has *managed rules* which includes rule to protect against SQL injection. Azure Front Door Managed Rules are added in WAF policy.
+
+```azurecli
+az network front-door waf-policy managed-rules add `
+    --policy-name $AFD_POLICY_NAME `
+    --resource-group $RG `
+    --type "DefaultRuleSet" `
+    --version "1.0"
+```
+
+Finally, WAF policy is applied to the default front end endpoint of Azure Front Door.
+
+```azurecli
+az network front-door update `
+    --resource-group $RG `
+    --name $AFD_NAME `
+    --set FrontendEndpoints[0].WebApplicationFirewallPolicyLink.id=/subscriptions/$SUB_ID/resourcegroups/$RG/providers/Microsoft.Network/frontdoorwebapplicationfirewallpolicies/$AFD_POLICY_NAME 
+```
+When a user navigates to Azure Front Door front address (e.g [YOUR-AFD-NAME].azurefd,net) application login page shown.
+
+If user enters password `' or '1'='1` that initiates SQL injection attack, a request blocked page is shown as below.
+
+![afdblocked](/assets/aks/afdblocked.png)
