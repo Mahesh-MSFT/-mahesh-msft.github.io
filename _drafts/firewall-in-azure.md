@@ -288,7 +288,7 @@ Navigation to Azure Firewall's public IP address loads application as show below
 
 ![fwload](/assets/aks/aksload.png)
 
-If user enters any username and following password that initiates SQL injection then login is considered successful. 
+If user enters any username and following password that initiates SQL injection then login is considered successful.
 
 ```XML
  ' or '1'='1
@@ -299,3 +299,36 @@ User is promptly navigated to *home* page as shown below.
 ![afwhome](/assets/aks/afwhome.png).
 
 This outcome is expected. Azure Firewall does not provide Web Application Firewall (WAF) capability. Azure Firewall provides inbound protection for non-HTTP/S protocols. Azure Firewall should be used to protecting incoming traffic over RDP, FTP and SSH protocols.
+
+## Testing with Azure Application Gateway
+
+Azure Application Gateway is configured with *Prevention* as firewall mode.
+
+```azurecli
+az network application-gateway waf-config set `
+  --enabled true `
+  --gateway-name $AGW_NAME `
+  --resource-group $RG `
+  --firewall-mode Prevention `
+  --rule-set-version 3.0
+```
+
+Azure Application Gateway has a HTTP probe created for the private IP address of the internal load balancer inside AKS subnet.
+
+```azurecli
+az network application-gateway probe create `
+    -g $RG `
+    --gateway-name $AGW_NAME `
+    -n defaultprobe-Http `
+    --protocol http `
+    --host <PRIVATE IP OF INTERNAL LOAD BALANCER in AKS> `
+    --timeout 30 `
+    --path /jsi
+```
+
+Navigating to public IP address of the Azure Application Gateway loads the application home page.
+
+However, if user enters password `' or '1'='1` that initiates SQL injection attack, an error page is shown as below.
+
+![agwerror](/assets/aks/agwerror.png)
+
