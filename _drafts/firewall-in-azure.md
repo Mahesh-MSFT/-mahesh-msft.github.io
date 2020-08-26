@@ -1,6 +1,6 @@
 ---
 title: "Choosing right Firewall service in Azure"
-date: 2020-08-20
+date: 2020-08-26
 categories:
   - blog
 tags:
@@ -9,7 +9,7 @@ tags:
   - Azure Front Door
 ---
 
-Azure has multiple services providing firewall capabilities. Features provided by these services are well documented. However, seeing these capabilities in action can help  evaluate each service before making a decision. This post will use a SQL injection attack to showcase firewall capabilities.
+Azure has multiple services providing firewall capabilities. Features provided by these services are well documented. However, seeing these capabilities in action can help  evaluate each service before making a decision. This post will use a SQL injection attack to compare and contrast firewall capabilities.
 
 Below are three key Azure services that provide firewall services.
 
@@ -391,7 +391,7 @@ Azure Front Door has blocked the request which had SQL injection script in it.
 
 ## Summary
 
-Azure Firewall provides firewall capabilities for non-HTTP ingress traffic. For HTTP ingress traffic use Azure Application Gateway or Azure Front Door. Azure Front Door needs a public IP or a publically routable DNS address as it's backend. Azure Application Gateway can use private IP address as it's backend.
+Azure Firewall provides firewall capabilities for non-HTTP ingress traffic. For HTTP ingress traffic use Azure Application Gateway or Azure Front Door. Azure Front Door needs a public IP or a publically routable DNS address as it's backend. Azure Application Gateway can use private IP address as it's backend. There are many other features that separates these Azure services. Use references provided below to learn more and make right decision. 
 
 ## Additional resources
 
