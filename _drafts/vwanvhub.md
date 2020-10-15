@@ -108,8 +108,237 @@ Set the base64 encoded raw certificate data in the parameters file as shown belo
 }
 ```
 
-### Create Web Server VM VNet
+Create public IP address to be assigned for VPN gateway as shown below.
 
+```armasm
+{
+    "apiVersion": "2018-04-01",
+    "type": "Microsoft.Network/publicIPAddresses",
+    "name": "[parameters('gatewayPublicIPName')]",
+    "location": "[resourceGroup().location]",
+    "properties": {
+    "publicIPAllocationMethod": "Dynamic"
+    }
+}
+```
+
+Create VPN Gateway as shown below.
+
+```armasm
+{
+    "apiVersion": "2018-04-01",
+    "type": "Microsoft.Network/virtualNetworkGateways",
+    "name": "[parameters('gatewayName')]",
+    "location": "[resourceGroup().location]",
+    "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', parameters('gatewayPublicIPName'))]",
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('hubVnetName'))]"
+    ]
+}
+```
+
+Assign the public IP and subnet as shown below.
+
+```armasm
+"ipConfigurations": [
+    {
+    "properties": {
+            "privateIPAllocationMethod": "Dynamic",
+            "subnet": {
+            "id": "[variables('gatewaySubnetRef')]"
+        },
+        "publicIPAddress": {
+            "id": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('gatewayPublicIPName'))]"
+            }
+        },
+        "name": "vnetGatewayConfig"
+    }
+]
+```
+
+Configure VPN certificate as below.
+
+```armasm
+"vpnClientConfiguration": {
+    "vpnClientAddressPool": {
+        "addressPrefixes": [
+            "[parameters('vpnClientAddressPoolPrefix')]"
+        ]
+    },
+        "vpnClientRootCertificates": [
+        {
+            "name": "[parameters('clientRootCertName')]",
+            "properties": {
+                "PublicCertData": "[parameters('clientRootCertData')]"
+            }
+        }
+    ]
+}
+```
+
+### Create Web Server VNet and VM
+
+Define the Web Server VNet with following template.
+
+```armasm
+ {
+    "apiVersion": "2018-04-01",
+    "type": "Microsoft.Network/virtualNetworks",
+    "name": "[parameters('spoke1VnetName')]",
+    "location": "[resourceGroup().location]",
+    "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('hubVnetName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', 'spoke-vnet1-subnet-nsg')]"
+    ],
+    "properties": {
+    "addressSpace": {
+        "addressPrefixes": [
+        "[parameters('spoke1VnetAddressPrefix')]"
+        ]
+    },
+}
+``` 
+
+Define a default subnet as shown below.
+
+```armasm
+"subnets": [
+    {
+        "name": "default",
+        "properties": {
+            "addressPrefix": "[parameters('spoke1SubnetAddressPrefix')]",
+            "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'spoke-vnet1-subnet-nsg')]"
+            }
+        }   
+    }
+]
+```
+
+Create a Web Server VM as shown below.
+
+```armasm
+{
+    "apiVersion": "2017-03-30",
+    "type": "Microsoft.Compute/virtualMachines",
+    "name": "[parameters('spoke1Vm1Name')]",
+    "location": "[resourceGroup().location]",
+    "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('vm1-spoke1-nic'))]"
+    ],
+    "properties": {
+        "hardwareProfile": {
+        "vmSize": "Standard_A2_v2"
+        },
+    "osProfile": {
+        "computerName": "[parameters('spoke1Vm1Name')]",
+        "adminUsername": "spoke1vm1-uid",
+        "adminPassword": "P@ssw0rd1234"
+    },
+    "storageProfile": {
+        "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2012-R2-Datacenter",
+            "version": "latest"
+        },
+        "osDisk": {
+            "name": "[concat(parameters('spoke1Vm1Name'),'_OSDisk')]", 
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+            }
+    },
+    "networkProfile": {
+        "networkInterfaces": [
+                {
+                "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('vm1-spoke1-nic'))]"
+                }
+            ]
+        }
+    }
+}
+```
+
+### Create Network Peering between Hub VNet and Web Server VNet
+
+Configure the peering as shown below in Web Server VNet.
+
+```armasm
+{
+    "apiVersion": "2020-05-01",
+    "type": "virtualNetworkPeerings",
+    "name": "[variables('SpokevNet1toHubvNetPeeringName')]",
+    "location": "[resourceGroup().location]",
+    "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks/', parameters('hubVnetName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/', parameters('spoke1VnetName'))]"
+    ],
+    "comments": "Peering from Spoke vNet 1 to Hub vNet",
+    "properties": {
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": false,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": true,
+        "remoteVirtualNetwork": {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks',parameters('hubVnetName'))]"
+        }
+    }
+}
+```
+
+Similarly, configure reciprocal peering in Hub VNet as shown below.
+
+```armasm
+{
+    "apiVersion": "2020-05-01",
+    "type": "virtualNetworkPeerings",
+    "name": "[variables('HubvNettoSpokevNet1PeeringName')]",
+    "location": "[resourceGroup().location]",
+    "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks/', parameters('hubVnetName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/', parameters('spoke1VnetName'))]"
+    ],
+    "comments": "Peering from Hub vNet to Spoke vNet 1",
+    "properties": {
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": false,
+        "allowGatewayTransit": true,
+        "useRemoteGateways": false,
+        "remoteVirtualNetwork": {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks',parameters('spoke1VnetName'))]"
+        }
+    }
+}
+```
+
+### Create Database Server VNet and VM
+
+Follow the same steps as followed in creating Web Sever VNet and VM. Change the configuration values as appropriate.
+
+### Create Network Peering between Hub VNet and Database Server VNet
+
+Configure the network peering using same process as followed for Web Server peering. Ensure that configuration values are replaced as appropriate.  
+
+### Validate connectivity between Web and Database Servers
+
+To validate connectivity between Web and Database servers, connect with the Hub VNet using VPN first. Then using the VPN connectivity, RDP session with either Web or Database server will be established.
+
+To use VPN client, download the client by running following command.
+
+```azurecli-interactive
+az network vnet-gateway vpn-client generate -n hubvnetGateway `
+    --processor-architecture Amd64 `
+    -g $rgName
+```
+
+After downloading, launch the appropriate client (Windows (32, 64) or Mac).
+
+![launchvpn](/assets/vwanhub/hubvnetvpn.jpg)
+
+Ensure that connection is established successfully after clicking "Connect" button.
+ 
+![connectvpn](/assets/vwanhub/vnetvpn.jpg)
 
 
 ## Additional resources
