@@ -9,7 +9,7 @@ tags:
   - Azure Virtual WAN
 ---
 
-Azure Virtual Network provides a logical, isolated and secure network boundary inside Azure. As more and more workloads start to get deployed in Azure Virtual Networks, enabling network connectivity across them starts to become challenging. There are multiple options to address these challenges. These options include Virtual Network (VNet) Peering, VNet-to-VNet connectivity using VPN gateway, etc. To address common VNet connectivity challenges, a pattern has evolved over the years. This pattern is referred as "Hub-spoke network topology in Azure". Hub and spoke network topology pattern brings multiple benefits and simplifies network connectivity in Azure. Azure has another service called as Azure Virtual WAN (vWAN). Azure vWAN provides *managed hub and spoke topology* facilitating any-to-any connectivity. This post will compare and contrast Hub and spoke network topology and Azure vWAN to help customers make informed decision. 
+Azure Virtual Network provides a logical, isolated and secure network boundary inside Azure. As more and more workloads start to get deployed in Azure Virtual Networks, enabling network connectivity across them starts to become challenging. There are multiple options to address these challenges. These options include Virtual Network (VNet) Peering, VNet-to-VNet connectivity using VPN gateway, etc. To address common VNet connectivity challenges, a pattern has evolved over the years. This pattern is referred as "Hub-spoke network topology in Azure". Hub and spoke network topology pattern brings multiple benefits and simplifies network connectivity in Azure. Azure has another service called as Azure Virtual WAN (vWAN). Azure vWAN provides *managed hub and spoke topology* facilitating any-to-any connectivity. This post will compare and contrast Hub and spoke network topology and Azure vWAN to help customers make informed decision.
 
 ## Scenario
 
@@ -318,7 +318,9 @@ Follow the same steps as followed in creating Web Sever VNet and VM. Change the 
 
 ### Create Network Peering between Hub VNet and Database Server VNet
 
-Configure the network peering using same process as followed for Web Server peering. Ensure that configuration values are replaced as appropriate.  
+Configure the network peering using same process as followed for Web Server peering. Ensure that configuration values are replaced as appropriate.
+
+At this point, there are 2 VNets which are connected with hub VNet.
 
 ### Validate connectivity between Web and Database Servers
 
@@ -340,9 +342,92 @@ Ensure that connection is established successfully after clicking "Connect" butt
  
 ![connectvpn](/assets/vwanhub/vnetvpn.jpg)
 
+Once VPN is connected, use RDP to connect with either Web Server VM or Database Server VM.
+
+Before deploying Database or Web server on these VMs respectively, check if network connectivity is working between them. Easiest option is to do a ping test as shown below.
+
+![ping](/assets/vwanhub/ping.jpg)
+
+As can be seen, there is no connectivity between Web and Database Server VMs.
+
+### Connectivity in Hub and spoke network topology
+
+In the context of scenario discussed in this post, connectivity between Web and Database VNets via the Hub VNet is not supported *natively*. This type of connectivity is also referred as *transitive connectivity*. To establish transitive connectivity between 2 VNets, either Azure Firewall or Network Virtual Appliance (NVA) from a Partner will be needed.  
+
+## vWAN hub workflow
+
+vWAN workflow is now discussed in detail below.
+
+### Create vWAN and vWAN hub
+
+Use following ARM script to create vWAN.
+
+```armasm
+{
+    "type": "Microsoft.Network/virtualWans",
+    "name": "[parameters('vwanName')]",
+    "apiVersion": "2020-05-01",
+    "location": "[resourceGroup().location]",
+    "properties": {
+        "allowVnetToVnetTraffic": true,
+        "type": "Standard"
+    }
+}
+```
+
+Create a vWAN hub as shown below.
+
+```armasm
+{
+    "type": "Microsoft.Network/virtualHubs",
+    "name": "[parameters('vWanHubName')]",
+    "apiVersion": "2020-04-01",
+    "location": "[resourceGroup().location]",
+    "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualWans/', parameters('vwanName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('spoke3VnetName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('spoke4VnetName'))]"
+    ]
+}
+```
+
+### Create P2S VPN Gateway and associate it with vWAN hub
+
+Create VPN Server Configuration as shown below to be used in VPN Gateway. Note that the VPN client root certificate is same as used for setting up VNet hub VPN connectivity.
+
+```armasm
+{
+    "type": "Microsoft.Network/vpnServerConfigurations",
+    "apiVersion": "2020-05-01",
+    "name": "vwan-p2s-vpn-config",
+    "location": "[resourceGroup().location]",
+    "properties": {
+        "vpnProtocols": [
+            "IkeV2"
+        ],
+        "vpnAuthenticationTypes": [
+            "Certificate"
+        ],
+        "vpnClientRootCertificates": [
+            {
+                "name": "[parameters('clientRootCertName')]",
+                "publicCertData": "[parameters('clientRootCertData')]"
+            }
+        ],
+        "vpnClientRevokedCertificates": [],
+        "radiusServers": [],
+        "radiusServerRootCertificates": [],
+        "radiusClientRootCertificates": [],
+        "vpnClientIpsecPolicies": []
+    }
+}
+```
+
+
 
 ## Additional resources
 
 * [Choose between virtual network peering and VPN gateways in Azure](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/vnet-peering)
 * [Hub-spoke network topology in Azure](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
 * [Azure Virtual WAN](https://azure.microsoft.com/en-gb/services/virtual-wan/)
+* [Transitive Spoke connectivity](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke#spoke-connectivity)
