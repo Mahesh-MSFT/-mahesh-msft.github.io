@@ -385,8 +385,7 @@ Create a vWAN hub as shown below.
     "location": "[resourceGroup().location]",
     "dependsOn": [
         "[resourceId('Microsoft.Network/virtualWans/', parameters('vwanName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('spoke3VnetName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('spoke4VnetName'))]"
+        ...
     ]
 }
 ```
@@ -414,15 +413,183 @@ Create VPN Server Configuration as shown below to be used in VPN Gateway. Note t
                 "publicCertData": "[parameters('clientRootCertData')]"
             }
         ],
-        "vpnClientRevokedCertificates": [],
-        "radiusServers": [],
-        "radiusServerRootCertificates": [],
-        "radiusClientRootCertificates": [],
-        "vpnClientIpsecPolicies": []
+        ...
     }
 }
 ```
 
+Create default route table as shown below to be associated with VPN Gateway.
+
+```armasm
+{
+    "type": "Microsoft.Network/virtualHubs/hubRouteTables",
+    "apiVersion": "2020-05-01",
+    "name": "[concat(parameters('vWanHubName'), '/defaultRouteTable')]",
+    "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualHubs', parameters('vWanHubName'))]"
+    ]
+    ...
+}
+```
+
+Use the VPN configuration & route table created above and associate it with VPN Gateway as shown below.
+
+```armasm
+{
+    "type": "Microsoft.Network/p2sVpnGateways",
+    "apiVersion": "2020-05-01",
+    "name": "[parameters('vwanP2SVpnGatewayName')]",
+    "location": "uksouth",
+    "dependsOn": [
+        ...
+    ],
+    "properties": {
+                "virtualHub": {
+                    "id": "[resourceId('Microsoft.Network/virtualHubs', parameters('vWanHubName'))]"
+                },
+                "vpnServerConfiguration": {
+                    "id": "[resourceId('Microsoft.Network/vpnServerConfigurations', 'vwan-p2s-vpn-config')]"
+                },
+                ...
+                "vpnClientAddressPool": {
+                    "addressPrefixes": [
+                        "10.10.8.0/24"
+                    ]
+                }
+            }
+}  
+```
+
+Assign the VPN Gateway to vWAN hub as below.
+
+```armasm
+ {
+    "type": "Microsoft.Network/virtualHubs",
+    "name": "[parameters('vWanHubName')]",
+    "apiVersion": "2020-04-01",
+    "location": "[resourceGroup().location]",
+    "dependsOn": [
+        ...
+    ],
+    "properties": {
+        ...
+        },
+            "p2SVpnGateway": {
+            "id": "[resourceId('Microsoft.Network/p2sVpnGateways', parameters('vwanP2SVpnGatewayName'))]"
+        },
+        ...
+ }
+```
+
+### Create Web Server and Database Server VNets and VMs
+
+Use the same process as described earlier to create Web Server and Database Server VNets. In this post, 2 additional separate VNets are created.
+
+### Connect Web Server and Database Server VNets with vWAN hub
+
+To connect Web Server and Database Server VNets with vWAN hub, configure `virtualNetworkConnections` as shown below. Each VNet is associated with vWAN hub separately.
+
+```armasm
+{
+    "type": "Microsoft.Network/virtualHubs",
+    "name": "[parameters('vWanHubName')]",
+    "apiVersion": "2020-04-01",
+    "location": "[resourceGroup().location]",
+    "dependsOn": [
+        ...
+    ],
+    "properties": {
+       ...
+        "virtualNetworkConnections": [
+            {
+                "name": "vhub-to-web-server-vnet",
+                "properties": {
+                    "remoteVirtualNetwork": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('spoke3VnetName'))]"
+                    },
+                    "allowHubToRemoteVnetTransit": true,
+                    "allowRemoteVnetToUseHubVnetGateways": true,
+                    "enableInternetSecurity": true
+                }
+            },
+            {
+                "name": "vhub-to-database-server-vnet",
+                "properties": {
+                    "remoteVirtualNetwork": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('spoke4VnetName'))]"
+                    },
+                    "allowHubToRemoteVnetTransit": true,
+                    "allowRemoteVnetToUseHubVnetGateways": true,
+                    "enableInternetSecurity": true
+                }
+            }
+        ],
+        "sku": "Standard"
+    }
+}
+```
+
+Configure routes as shown below.
+
+```armasm
+{
+    "type": "Microsoft.Network/virtualHubs/hubRouteTables",
+    "apiVersion": "2020-05-01",
+    "name": "[concat(parameters('vWanHubName'), '/defaultRouteTable')]",
+    "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualHubs', parameters('vWanHubName'))]"
+    ],
+    "properties": {
+        "routes": [
+            {
+                "name": "spoke3route",
+                "destinationType": "CIDR",
+                    "destinations": [
+                        "192.168.251.0/24"
+                    ],
+                "nextHopType": "ResourceId",
+                "nextHop": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', parameters('vWanHubName'), 'vhub-to-spoke3')]"
+            },
+            {
+                "name": "spoke4route",
+                "destinationType": "CIDR",
+                    "destinations": [
+                        "192.168.252.0/24"
+                    ],
+                "nextHopType": "ResourceId",
+                "nextHop": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', parameters('vWanHubName'), 'vhub-to-spoke4')]"
+            }
+        ],
+        "labels": [
+            "default"
+        ]
+    }
+}
+```
+
+### Validate connectivity between Web and Database Servers in vWAN
+
+Process to validate connectivity between Web and Database servers in vWAN is similar to the one followed in VNet hub. First, connect with the vWAN hub using VPN . Then using the VPN connectivity, RDP session with either Web or Database server will be established.
+
+Download the VPN client from Azure portal as shown below.
+
+![downloadvwanvpn](/assets/vwanhub/vwanvpn.jpg)
+
+After downloading, launch the appropriate client (Windows (32, 64) or Mac).
+
+![launchvwanvpn](/assets/vwanhub/vwanvpnconnect.jpg)
+
+Click "Connect" button and validate that connection is established successfully.
+ 
+![connectvwanvpn](/assets/vwanhub/vwanvpsuccess.jpg)
+
+Use RDP to connect with either Web Server VM or Database Server VM after VPN is connected.
+
+Just like before, check if network connectivity is working between Database and Web servers. Run a ping test as shown below to quickly verify connectivity.
+
+![ping](/assets/vwanhub/vwanping.jpg)
+
+From the screenshot above, connectivity between Web and Database Server VMs is established successfully.
 
 
 ## Additional resources
