@@ -589,8 +589,22 @@ Just like before, check if network connectivity is working between Database and 
 
 ![ping](/assets/vwanhub/vwanping.jpg)
 
-From the screenshot above, connectivity between Web and Database Server VMs is established successfully.
+From the screenshot above, connectivity between Web and Database Server VMs is established successfully. Once Database and Web Server softwares are installed on these servers, connectivity will work just fine between them.
 
+### Connectivity in vWAN Hub topology
+
+In the context of scenario, vWAN hub based VPN and cross-vNet connectivity works in *default* mode. vWAN hub provides native support for transitive connectivity. This simplifies network management without having to use Partner solution on Azure Firewall just for enabling transitive networking.  
+
+## Summary
+
+Consider following important factors to choose implementing either VNet hub and spoke or vWAN hub networking topology.
+
+* Need for cross-VNet transitive connectivity in *default* configuration.
+* Need for *any-to-any* connectivity between multiple on-premise sites/branches and Azure.
+* Need for supporting large number of VPN clients/branches/sites connectivity with Azure.
+* Need for higher aggregated throughput for connectivity with Azure.
+  
+Refer to following resources for additional information.
 
 ## Additional resources
 
@@ -598,3 +612,6 @@ From the screenshot above, connectivity between Web and Database Server VMs is e
 * [Hub-spoke network topology in Azure](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
 * [Azure Virtual WAN](https://azure.microsoft.com/en-gb/services/virtual-wan/)
 * [Transitive Spoke connectivity](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke#spoke-connectivity)
+* [Virtual WAN FAQ](https://docs.microsoft.com/en-us/azure/virtual-wan/virtual-wan-faq)
+* [VPN Gateway FAQ](https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq)
+* [Gateway SKUs by tunnel, connection, and throughput](https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpngateways#benchmark)
