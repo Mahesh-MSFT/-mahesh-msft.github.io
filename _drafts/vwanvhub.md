@@ -21,7 +21,7 @@ Each workflow is described at a high-level as below.
 
 Hub VNet workflow:
 
-1. An User uses a Point to Site (P2S) VPN client.
+1. An user uses a Point to Site (P2S) VPN client.
 1. VPN client connects to Azure VPN Gateway deployed in Hub VNet.
 1. Hub VNet is peered with a spoke VNet running a web server Virtual Machine (VM).
 1. Hub VNet is also peered with another spoke VNet running database server VM.
@@ -131,8 +131,7 @@ Create VPN Gateway as shown below.
     "name": "[parameters('gatewayName')]",
     "location": "[resourceGroup().location]",
     "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', parameters('gatewayPublicIPName'))]",
-        "[concat('Microsoft.Network/virtualNetworks/', parameters('hubVnetName'))]"
+        ...
     ]
 }
 ```
@@ -187,8 +186,7 @@ Define the Web Server VNet with following template.
     "name": "[parameters('spoke1VnetName')]",
     "location": "[resourceGroup().location]",
     "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', parameters('hubVnetName'))]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', 'spoke-vnet1-subnet-nsg')]"
+       ...
     ],
     "properties": {
     "addressSpace": {
@@ -224,8 +222,7 @@ Create a Web Server VM as shown below.
     "name": "[parameters('spoke1Vm1Name')]",
     "location": "[resourceGroup().location]",
     "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', parameters('vm1-spoke1-nic'))]"
+        ...
     ],
     "properties": {
         "hardwareProfile": {
@@ -234,7 +231,7 @@ Create a Web Server VM as shown below.
     "osProfile": {
         "computerName": "[parameters('spoke1Vm1Name')]",
         "adminUsername": "spoke1vm1-uid",
-        "adminPassword": "P@ssw0rd1234"
+        "adminPassword": "<super-secret-password>"
     },
     "storageProfile": {
         "imageReference": {
@@ -271,8 +268,7 @@ Configure the peering as shown below in Web Server VNet.
     "name": "[variables('SpokevNet1toHubvNetPeeringName')]",
     "location": "[resourceGroup().location]",
     "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks/', parameters('hubVnetName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks/', parameters('spoke1VnetName'))]"
+        ...
     ],
     "comments": "Peering from Spoke vNet 1 to Hub vNet",
     "properties": {
@@ -287,7 +283,7 @@ Configure the peering as shown below in Web Server VNet.
 }
 ```
 
-Similarly, configure reciprocal peering in Hub VNet as shown below.
+Similarly, configure corresponding peering in Hub VNet as shown below.
 
 ```armasm
 {
@@ -296,8 +292,7 @@ Similarly, configure reciprocal peering in Hub VNet as shown below.
     "name": "[variables('HubvNettoSpokevNet1PeeringName')]",
     "location": "[resourceGroup().location]",
     "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks/', parameters('hubVnetName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks/', parameters('spoke1VnetName'))]"
+        ...
     ],
     "comments": "Peering from Hub vNet to Spoke vNet 1",
     "properties": {
@@ -314,7 +309,7 @@ Similarly, configure reciprocal peering in Hub VNet as shown below.
 
 ### Create Database Server VNet and VM
 
-Follow the same steps as followed in creating Web Sever VNet and VM. Change the configuration values as appropriate.
+Follow the same steps as followed in creating Web Sever VNet and VM. Change the configuration values as appropriate for Database VNet and VM.
 
 ### Create Network Peering between Hub VNet and Database Server VNet
 
@@ -597,7 +592,7 @@ In the context of scenario, vWAN hub based VPN and cross-vNet connectivity works
 
 ## Summary
 
-Consider following important factors to choose implementing either VNet hub and spoke or vWAN hub networking topology.
+Consider following important factors when choosing between either VNet hub and spoke or vWAN hub networking topology.
 
 * Need for cross-VNet transitive connectivity in *default* configuration.
 * Need for *any-to-any* connectivity between multiple on-premise sites/branches and Azure.
