@@ -10,7 +10,7 @@ However, when these pilots/PoCs make transition to production-ready enterprise a
 
 Production workloads using public IPs without proper security measures in place can increase security risks. Malicious actors can potentially use public IP as a gateway to launch an attack. Many enterprise compliance policies do not allow use of public IP just to avoid exposure to such security risks.
 
-*Deny-Public-Endpoints-for-PaaS-Services* PolicySet helps enterprises achieve exactly that. This PolicySet prevents Azure services getting created with a public IP address in the first place.
+*Deny-Public-Endpoints-for-PaaS-Services* PolicySet helps enterprises prevent prevents Azure services getting created with a public IP address in the first place. *Deny-Public-Endpoints-for-PaaS-Services* PolicySet consists of following policies.
 
     Deny-PublicEndpoint-CosmosDB
     Deny-PublicEndpoint-MariaDB
@@ -21,7 +21,9 @@ Production workloads using public IPs without proper security measures in place 
     Deny-PublicEndpoint-Storage
     Deny-PublicEndpoint-Aks
 
-Deploy-Diag-LogAnalytics
+Together, *Deny-Public-Endpoints-for-PaaS-Services* policies above, prevent major Azure services such as CosmosDB, SQL, AKS, etc. being exposed over a public IP.
+
+## Deploy-Diag-LogAnalytics
 
     Deploy-Diagnostics-NIC
     Deploy-Diagnostics-AA
@@ -73,6 +75,7 @@ Deploy-Diag-LogAnalytics
     Deploy-Diagnostics-SQLMI
     Deploy-Diagnostics-TimeSeriesInsights
     Deploy-Diagnostics-MlWorkspace
+
 Deploy-Sql-Security
     Deploy-Sql-Tde
     Deploy-Sql-SecurityAlertPolicies
