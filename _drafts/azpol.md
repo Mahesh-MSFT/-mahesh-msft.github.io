@@ -1,8 +1,8 @@
-# Introduction
+# How does Enterprise-scale Landing Zone Policies help?
 
 Following are the Azure Policies configured by Enterprise Scale Landing Zone.
 
-## Deny-Public-Endpoints-for-PaaS-Services Policy Initiative
+## Prevent Public IP based services
 
 Most of the Azure Platform-as-a-service (PaaS) services are created with a public IP address assigned to them. This is a good option for developers who want to quickly get started with these services. Public endpoint accelerates learning curve and is ideal when developing pilots and small-scales Proof Of Concept (PoC) implementations.
 
@@ -23,7 +23,7 @@ Production workloads using public IPs without proper security measures in place 
 
 Together, *Deny-Public-Endpoints-for-PaaS-Services* policies above, prevent major Azure services such as CosmosDB, SQL, AKS, etc. being exposed over a public IP.
 
-## Deploy-Diag-LogAnalytics Policy Initiative
+## Enforce audit and log information collection
 
 Lack of auditing and diagnostics information at granular level can impact operational practices. Incomplete audit information makes it difficult to correlate logs from multiple Azure services and form a coherent debugging experience.
 
@@ -87,13 +87,13 @@ Deploy-Diagnostics-WebServerFarm||AllMetrics
 Deploy-Diagnostics-Website||AllMetrics
 |<img width=250/>|<img width=50/>|<img width=40/>|
 
-## Deploy-Sql-Security Policy Initiative
+## Secure SQL Databases
 
 SQL databases are prevalent Azure service in most Azure deployments. Unfortunately, they are also prime target for malicious activities from within and outside of an enterprise.
 
 *Deploy-Sql-Security* Policy Initiative helps protect Azure SQL databases using a set of following policies.
 
-### Deploy-Sql-Tde
+### Encrypt SQL data at rest
 
 SQL database and its backups are prone to risks of getting into hands of malicious actors. It's very easy to restore SQL database from either database files or backup. Without proper defence system in place, malicious actors can have access to all the data.
 
@@ -105,7 +105,7 @@ As Azure SQL database deployments within an enterprise increases, it is very imp
 
 *Deploy-Sql-Tde* policy ensures that Azure SQL databases have TDE enabled.
 
-### Deploy-Sql-SecurityAlertPolicies
+### Enforce alerts for suspicious activity
 
 Bad actors are on the constant lookout to access and exploit business-critical Azure SQL databases. Risk of such attempts going unnoticed can reduce an enterprise's ability to detect and respond to them. In worst case scenario, an enterprise may never know if its SQL database has been compromised.
 
@@ -113,7 +113,7 @@ Azure SQL database provides way to set up security alerts that can report suspic
 
 *Deploy-Sql-SecurityAlertPolicies* helps to enforce enabling of security alerts on Azure SQL databases. Enterprise can benefit from identifying malicious activities such as SQL injection attack, brute force attack, etc. though these alert. Security alerts provide detailed information about every incident. This detailed information is surfaced in Azure portal as well as email message triggered.
 
-### Deploy-Sql-AuditingSettings
+### Enforce audit trail of operations
 
 A business-critical Azure SQL database can be subject to a large number of DML (Data Manipulation Language), DCL (Data Control Language) and DDL (Data Definition Language) commands as part of day to day operations. Without a clear control and insight into these operational activities, its challenging to distinguish between legitimate and suspicious operations.
 
@@ -121,18 +121,30 @@ Enabling SQL Auditing can help in gathering important information about all data
 
 *Deploy-Sql-AuditingSettings* helps in enforcing Azure SQL Database Auditing. This policy audits and reports key database events such as ownership changes, successful/failed logins, role membership changes, schema changes, etc. Enterprises can use this policy and audit trail it generates to gain rich insights into database operations and comply with industry/regional regulatory requirements.
 
-### Deploy-Sql-vulnerabilityAssessments
+### Enforce evaluation against proven best parctices
 
 Throughout it's lifecycle, Azure SQL database undergoes very large number of schema, permission and configuration changes. There is always a risk of such changes resulting in deviation from best practices. Excessive permissions, orphaned roles and many such configurational drifts can be exploited by malicious actors.
 
 Azure SQL database has built-in vulnerability assessment service.  State of Azure SQL database through the lense of Microsoft's best practices for SQL database can be evaluated using vulnerability assessment. A vulnerability assessment scan identifies database and server level security risks. A remediation task in applicable scenario may be also generated to fix the vulnerability.
 
-*Deploy-Sql-vulnerabilityAssessments* policy ensures that Azure SQL databases are configured with vulnerability assessment. The assessment scans are performed periodically and reports are stored in Azure storage account. Pre-defined email address is used to share the results of periodic scan results for reporting purposes. 
+*Deploy-Sql-vulnerabilityAssessments* policy ensures that Azure SQL databases are configured with vulnerability assessment. The assessment scans are performed periodically and reports are stored in Azure storage account. Pre-defined email address is used to share the results of periodic scan results for reporting purposes.
 
+### Protect against intentional/unintentional secret deletion
 
-    Append-KV-SoftDelete
-    DataProtectionSecurityCenter
-    Deny-AppGW-Without-WAF
+Azure Key Vault is a service to store confidential information such as keys, certificates, passwords, etc. A malicious user can potentially abuse Azure Key Vault service by deleting secrets stored inside it. It is also quite likely that a user may accidentally delete sensitive information stored in Azure Key Vault. Without proper provisions in place, either malicious or accidental deletion in Azure Key Vault can cause significant business harm.
+
+Azure Key Vault provides protection against intentional or unintentional deletion of contents stored inside it through soft-delete feature. When soft-delete is enabled, deleted keys will be retained for a pre-configured time period. If the delete operation was unintentional then deleted key can be restored within pre-configured time window. If the delete operation was intentional then key content can be deleted until an additional *purge* operation is performed - typically by someone with higher privileges.
+
+*Append-KV-SoftDelete* policy ensures that Azure Key vault is enabled with soft-delete feature by default. Enterprises get better control on deletion of Azure Key Vault content for unintentional operations. *Append-KV-SoftDelete* policy provides an additional security layer for malicious deletion of Azure Key Vault content.
+
+### Deny-AppGW-Without-WAF
+
+Web applications running on Azure are potential targets of number of malicious attacks. [Top 10 common attacks](https://owasp.org/www-project-top-ten/) - such as - injection, cross-site scripting, etc. try to exploit known vulnerabilities typically associated with web applications. Consequences of a successful attack can be very costly and may impact brand value negatively.
+
+Azure Application Gateway Web Application Firewall (WAF) provides protection against common attacks on web applications. It implements Core Rule Set (CRS) 3.1, 3.0 or 2.2.9 as recommended by the Open Web Application Security Project (OWASP). WAF policies can be associated with Azure Application Gateway either in *Prevention* or *Detection* mode.
+
+*Deny-AppGW-Without-WAF* policy helps in preventing potential misconfiguration on Azure Application Gateway. It enforces Azure Application Gateway can't be created without a Web Application Firewall (WAF).   
+    
     Deny-ERPeering
     Deny-IP-forwarding
     Deny-Private-DNS-Zones
