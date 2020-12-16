@@ -87,7 +87,7 @@ Deploy-Diagnostics-WebServerFarm||AllMetrics
 Deploy-Diagnostics-Website||AllMetrics
 |<img width=250/>|<img width=50/>|<img width=40/>|
 
-## Secure SQL Databases
+## Provide comprehensive security for SQL Databases
 
 SQL databases are prevalent Azure service in most Azure deployments. Unfortunately, they are also prime target for malicious activities from within and outside of an enterprise.
 
@@ -147,25 +147,50 @@ Azure Application Gateway Web Application Firewall (WAF) provides protection aga
 
 ## Deny-ERPeering
 
-## Prevent IP forwarding on VMs in Landing Zone
+## Prevent IP forwarding on VMs
 
 IP forwarding enables Azure VM to route traffic it receives to other destinations. Unless explicitly required, such routing may potentially expose a VM with public IP address as a router. Other unintended networks can be reached via VM-turned-router with IP forwarding.
 
 Azure provides an option to configure IP forwarding on Virtual Machines (VMs). This enables specialized softwares such as firewalls, load balancers, etc. to be deployed via Azure Marketplace. Any application that may need to use these services, can use them via Azure Marketplace transaction.
 
 However, outside of specific needs, IP forwarding on VMs may become a security liability. *Deny-IP-forwarding* policy helps in preventing VMs acting as IP forwarding routers. This policy is explicitly applied at landing zone scope. VMs in landing zone should be final destinations for user requests. Any routing should be implemented in the connectivity subscriptions.
+
+## Deny-Private-DNS-Zones
+
+## Deny-PublicIP
+
+## Enforce network traffic control
+
+An Azure Virtual Network (VNet) can be segmented into multiple Subnets. By default, there is no network access control between these subnets. Lack of network access control can result in unsolicited network traffic arriving inside a subnet.
+
+Azure Network Security Group (NSG) helps is filtering incoming traffic to and from a subnet. NSGs can allow or deny network traffic based on stateful packet inspection. Any resources inside subnet can receive traffic from only allowed IP address range(s).
+
+*Deny-Subnet-Without-Nsg* policy ensures that every subnet has a NSG associated with it. A combination of subnet and NSG ensures that a default set of rules controls traffic to and from a subnet. Enterprises can add/modify rules to control traffic further based on the needs.
+
+## Detect and protect against security threats by using Azure Security Center
+
+An Azure subscription can hold multiple types of resource (e.g. VMs, Container Images, etc.) These resources are exposed to risks such as malware/unwanted software installation, uncontrolled access to management ports on a VM, etc. With security attacks getting ever sophisticated and a limited-supply of experienced security professionals, detecting security vulnerabilities and protecting workloads is extremely challenging.
+
+Azure Security Center is Azure's native security management system which assesses Azure resources for their security posture against security best practices.  Azure security center helps to detect and prevent threats against data and application services. With multiple integration points, Azure Security center can be deployed very quickly.
+
+*Deploy-ASC-Standard* policy helps in enrolling Azure subscription(s) with Azure Security Center Standard mode which enables those subscription(s) to start getting security threat detection and protection capabilities offered by Azure Security Center. *Deploy-ASC-Standard* policy also ensures that key Azure services such as VMs, Storage Accounts and seven other services are automatically covered by Azure Security Center. Enterprises benefits from continuous security assessment and actionable recommendations should there be any deviation from security best practice.
+
+## Protect against ransomware attacks and other data-loss related issues
+
+Increasing frequency of ransomware & intrusion attacks pose yet another concern for enterprises. A successful ransomware attack can disrupt business-critical processes and applications. Attackers are known to hold enterprises as hostage for huge amounts of money.
+
+Azure Backup provides protection for Azure VMs against accidental or intentional data destruction. Azure Backups are easy to configure and scale. Data is backed up in Azure Recovery Vault for easy management and protection.
+
+*Deploy-AzureBackup-on-VM* policy protects Azure VMs by configuring Azure Backup for them. *Deploy-AzureBackup-on-VM* policy automatically provisions Azure Recovery Services Vault and creates backup container for every Azure VM that gets created.
+
+## Protect against DDoS attacks
+
+Any publically reachable Azure resource is exposed to threat of Distributed Denial of Service (DDoS) attack. A successful DDoS attack can impact the application's availability to it's intended users. A prolonged DDoS attack can exhaust all available resources and result in downtime for business-critical application(s).
+
+Azure DDoS Protection service defends Azure resources against DDoS attacks. Azure DDoS Protection continuously monitors incoming traffic to identify potential indications of a DDoS attack. Enterprises benefit from working with Microsoft's DDoS Rapid Response (DRR) team during an active attack.
+
+*Deploy-DDoSProtection* policy automatically provisions Azure DDoS Standard plan on all Azure subscriptions under its scope. *Deploy-DDoSProtection* policy enables enterprises to select the Azure regions to be covered as part of the assignment.  
     
-    Deny-Private-DNS-Zones
-    Deny-PublicIP
-    Deny-Storage-http
-    Deny-Subnet-Without-Nsg
-    Deny-Subnet-Without-Nsg
-    Deploy-ASC-Monitoring
-    Deploy-ASC-Security
-    Deploy-ASC-Standard
-    Deploy-AzActivity-Log
-    Deploy-AzureBackup-on-VM
-    Deploy-DDoSProtection
     Deploy-DNSZoneGroup-For-Blob-PrivateEndpoint
     Deploy-DNSZoneGroup-For-File-PrivateEndpoint
     Deploy-DNSZoneGroup-For-KeyVault-PrivateEndpoint
