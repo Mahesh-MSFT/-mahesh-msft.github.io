@@ -33,7 +33,7 @@ Such information can be broadly divided into logs and metrics. Each Azure servic
  *Deploy-Diag-LogAnalytics Policy Initiative* provides an easy option to enforce logs and metrics collection at a deeper level.Azure Policies which are part *Deploy-Diag-LogAnalytics Policy Initiative* can help enterprises gather logs and metrics as shown below.
 
 | Policy Name  | Log Categories           |Metrics        |
-|:-------------|:-----------------------:|----------------:|
+|:-------------|:------------------------|:----------------|
 Deploy-Diagnostics-AA|JobLogs JobStreams DscNodeStatus|AllMetrics
 Deploy-Diagnostics-ACI||AllMetrics
 Deploy-Diagnostics-ACR||AllMetrics
@@ -155,7 +155,13 @@ Azure provides an option to configure IP forwarding on Virtual Machines (VMs). T
 
 However, outside of specific needs, IP forwarding on VMs may become a security liability. *Deny-IP-forwarding* policy helps in preventing VMs acting as IP forwarding routers. This policy is explicitly applied at landing zone scope. VMs in landing zone should be final destinations for user requests. Any routing should be implemented in the connectivity subscriptions.
 
-## Deny-Private-DNS-Zones
+## Enforce centralized DNS record management
+
+Azure Private DNS Zones help create and manage DNS records for Azure resources. Uncontrolled proliferation of Azure Private Zones can result in management & network connectivity debugging issues. In hybrid environments where connectivity from on-premise sites to Azure resources is desired, fragmented DNS zones can result in duplication of DNS records and associated maintenance challenges.
+
+Azure Private DNS Zone can be deployed centrally for easier management of DNS records. Azure Virtual Network linked with Azure Private Zone can potentially run domain controllers which facilitates streamlined connectivity from on-premise sites. Azure services which support Private Link/Endpoint can leverage centrally managed Azure Private Zone and prevent having to create them per application deployment.
+
+*Deny-Private-DNS-Zones* policy helps in preventing creation of Azure Private DNS Zone in the scope over which it is applied. Enterprises can view compliance status against this policy even when the policy enforcement is disabled. *Deny-Private-DNS-Zones* policy helps in streamlining connectivity from on-premise sites as well as access to Azure PaaS services using Private Link/Endpoint. 
 
 ## Deny-PublicIP
 
@@ -190,13 +196,33 @@ Any publically reachable Azure resource is exposed to threat of Distributed Deni
 Azure DDoS Protection service defends Azure resources against DDoS attacks. Azure DDoS Protection continuously monitors incoming traffic to identify potential indications of a DDoS attack. Enterprises benefit from working with Microsoft's DDoS Rapid Response (DRR) team during an active attack.
 
 *Deploy-DDoSProtection* policy automatically provisions Azure DDoS Standard plan on all Azure subscriptions under its scope. *Deploy-DDoSProtection* policy enables enterprises to select the Azure regions to be covered as part of the assignment.  
+
+## Auto-provision Private Link/Endpoint with Private DNS Zone
+
+Azure Private Link and Azure Private Endpoint provide access to Azure Platform-as-a-service (PaaS) services using private IP addresses. However, Azure Private DNS Zone is needed for DNS record resolution. Creation of Azure Private Zones for every application that needs to access Azure PaaS services is a management and maintenance challenge.
+
+Azure Private DNS Zone Group helps is grouping the Private Link connections by Azure Services (blob, queue, table, sql, etc.) using an Azure Private Zone per service. Below are the policies which helps grouping per Azure service.
+
+| Policy Name  |Azure Service    |
+|:-------------|:----------------|
+Deploy-DNSZoneGroup-For-Blob-PrivateEndpoint|Azure Storage Blob
+Deploy-DNSZoneGroup-For-File-PrivateEndpoint|Azure Storage File
+Deploy-DNSZoneGroup-For-Queue-PrivateEndpoint|Azure Storage Queue
+Deploy-DNSZoneGroup-For-Table-PrivateEndpoint|Azure Storage Table
+Deploy-DNSZoneGroup-For-KeyVault-PrivateEndpoint|Azure KeyVault
+Deploy-DNSZoneGroup-For-Sql-PrivateEndpoint|Azure SQL Database
+|<img width=150/>|<img width=40/>|
+
+Enterprises can create central Azure Private Zones and policies discussed above will auto-provision connections between Private Link/Endpoint and Private DNS Zone.
+
+
+
     
-    Deploy-DNSZoneGroup-For-Blob-PrivateEndpoint
-    Deploy-DNSZoneGroup-For-File-PrivateEndpoint
-    Deploy-DNSZoneGroup-For-KeyVault-PrivateEndpoint
-    Deploy-DNSZoneGroup-For-Queue-PrivateEndpoint
+    
+    
+    
     Deploy-DNSZoneGroup-For-Sql-PrivateEndpoint
-    Deploy-DNSZoneGroup-For-Table-PrivateEndpoint
+    
     Deploy-FirewallPolicy
     Deploy-HUB
     Deploy-LA-Config
