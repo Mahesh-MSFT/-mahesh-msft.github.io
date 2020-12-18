@@ -201,7 +201,9 @@ Azure DDoS Protection service defends Azure resources against DDoS attacks. Azur
 
 Azure Private Link and Azure Private Endpoint provide access to Azure Platform-as-a-service (PaaS) services using private IP addresses. However, Azure Private DNS Zone is needed for DNS record resolution. Creation of Azure Private Zones for every application that needs to access Azure PaaS services is a management and maintenance challenge.
 
-Azure Private DNS Zone Group helps is grouping the Private Link connections by Azure Services (blob, queue, table, sql, etc.) using an Azure Private Zone per service. Below are the policies which helps grouping per Azure service.
+Azure Private DNS Zone Group helps is grouping the Private Link connections by Azure Services (blob, queue, table, sql, etc.) using an Azure Private Zone per service.
+
+Enterprises can create central Azure Private Zones and policies discussed below will auto-provision connections between Private Link/Endpoint and Private DNS Zone.
 
 | Policy Name  |Azure Service    |
 |:-------------|:----------------|
@@ -211,19 +213,23 @@ Deploy-DNSZoneGroup-For-Queue-PrivateEndpoint|Azure Storage Queue
 Deploy-DNSZoneGroup-For-Table-PrivateEndpoint|Azure Storage Table
 Deploy-DNSZoneGroup-For-KeyVault-PrivateEndpoint|Azure KeyVault
 Deploy-DNSZoneGroup-For-Sql-PrivateEndpoint|Azure SQL Database
-|<img width=150/>|<img width=40/>|
 
-Enterprises can create central Azure Private Zones and policies discussed above will auto-provision connections between Private Link/Endpoint and Private DNS Zone.
+## Centrally manage firewall rules
 
+Fragmented firewall rules can lead to uncontrolled and ambiguous network traffic paths. Continuous changes in the firewalls rules for every instance of firewall makes it difficult to assess the network security posture. Multiple rules makes it impossible to distinguish between centrally managed basic set of rules and workload specific network path rules.
 
+Azure Firewall Policy helps to define basic minimum set of rules applicable throughout an enterprise. Application specific policy can inherit from basic rules to allow creation of hierarchial rules to meet both enterprise as well as application specific firewall rule requirements. When rules are configured through policies then they can be centrally managed and monitored.
 
+*Deploy-FirewallPolicy* policy enables enterprises to define Azure Firewall policies centrally. Enterprises are in control of defining priority as well as rules to meet their network traffic routing requirements. By defining firewall policies centrally, enterprises can apply them to either Azure Virtual WAN or Azure Hub and Spoke Networking topology depending upon needs.
+
+## Provision Hub and Spoke Network topology
+
+As more workloads starts to get deployed in Azure, they start to use a common set of services such as firewall, vpn gateways, etc. If not carefully planned, common services deployment gets replicated per application deployment resulting not only in unnecessary costs but also operational overhead. In scenarios, where on-premise connectivity is needed from Azure, network topology becomes difficult to maintain as this connectivity is established per application deployment.
+
+Azure Hub and Spoke network topology streamlines the network connectivity needs. A Hub Virtual Network (VNet) can host the shared services while spoke VNets can host application specific Azure resources. Hub and Spoke VNets are connected with each other via VNet Peering. Hub and Spoke network topology promotes clean network design, easier management and cost optimization.
+
+*Deploy-HUB* policy auto-provisions Hub VNet with Azure Firewall, VPN Gateway and ExpressRoute (ER) Gateway. Enterprises can configure all the options for Firewall, VPN and ER gateway as part of the policy assignment. *Deploy-HUB* policy simplifies the process to deploy Azure Hub and Spoke network topology.
     
-    
-    
-    
-    Deploy-DNSZoneGroup-For-Sql-PrivateEndpoint
-    
-    Deploy-FirewallPolicy
     Deploy-HUB
     Deploy-LA-Config
     Deploy-Log-Analytics
