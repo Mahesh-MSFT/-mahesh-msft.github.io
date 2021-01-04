@@ -229,9 +229,15 @@ As more workloads starts to get deployed in Azure, they start to use a common se
 Azure Hub and Spoke network topology streamlines the network connectivity needs. A Hub Virtual Network (VNet) can host the shared services while spoke VNets can host application specific Azure resources. Hub and Spoke VNets are connected with each other via VNet Peering. Hub and Spoke network topology promotes clean network design, easier management and cost optimization.
 
 *Deploy-HUB* policy auto-provisions Hub VNet with Azure Firewall, VPN Gateway and ExpressRoute (ER) Gateway. Enterprises can configure all the options for Firewall, VPN and ER gateway as part of the policy assignment. *Deploy-HUB* policy simplifies the process to deploy Azure Hub and Spoke network topology.
-    
-    Deploy-HUB
-    Deploy-LA-Config
+
+## Provision default configuration for Azure Monitor
+
+Inability to identify and visualize relationship between Azure platform, Azure service(s) and Azure application(s) may result into an outage or degraded performance going undetected. Operations or Support team may miss an opportunity to take corrective action to a specific condition. Azure application may not scale itself to respond to either surge or slump in the demand.
+
+Azure Monitor Logs along with Azure Log Analytics Workspace help enterprises in dealing with critical conditions using Alerts. Combined together, Azure Monitor Logs and Log Analytics Workspace, empower enterprises to visualize and interact with rich set of log information through dashboards, workbooks and Power BI. Enterprises can use Azure Monitor Logs and Log Analytics Workspace together to configure auto-scaling on VMs to automatically adding or removing instances.
+
+*Deploy-LA-Config* policy helps in configuring Log Analytics Workspace with Azure Monitor. *Deploy-LA-Config* policy deploys pre-packaged dashboard reports referred as Azure Monitor Solutions for specific Azure services such as Azure SQL Database or Azure Active Directory. *Deploy-LA-Config* policy also configures data sources such as Linux and Windows VM Performance metrics with Azure Monitor.
+
     Deploy-Log-Analytics
     Deploy-LX-Arc-Monitoring
     Deploy-Nsg-FlowLogs
