@@ -238,8 +238,22 @@ Azure Monitor Logs along with Azure Log Analytics Workspace help enterprises in 
 
 *Deploy-LA-Config* policy helps in configuring Log Analytics Workspace with Azure Monitor. *Deploy-LA-Config* policy deploys pre-packaged dashboard reports referred as Azure Monitor Solutions for specific Azure services such as Azure SQL Database or Azure Active Directory. *Deploy-LA-Config* policy also configures data sources such as Linux and Windows VM Performance metrics with Azure Monitor.
 
-    Deploy-Log-Analytics
-    Deploy-LX-Arc-Monitoring
+## Enable Log Storage and Querying
+
+If not carefully planned, log information coming from multiple sources is Azure can easily become unwieldy. Capturing, storing and managing logs can consume plenty of resources, time and costs. Identifying trends or patterns over a long period of time and over huge amount of logs can become challenging.
+
+Azure Log Analytics enables enterprises to store and manage logs from multiple sources efficiently. Querying the data stored in Azure Log Analytics for trend or pattern analysis is very easy with Azure Log Analytics. Alerts or interactive reports can be created using Azure Log Analytics queries.
+
+*Deploy-Log-Analytics* policy creates Azure Log Analytics Workspace which acts as a repository to store log data. An Azure Automation Account is also created and linked with Log Analytics Workspace for automating tasks or deploying Azure Monitor Solutions which may have dependency on Log Analytics Workspace. *Deploy-Log-Analytics* policy helps in configuring properties such as log retention period, azure region, etc.
+
+## Deploy-LX-Arc-Monitoring
+
+With IT estates spanning multiple clouds, on-premise sites and edge locations, many enterprises may be struggling to manage and govern servers which are scattered across environments and geographic locations. Using multitude of products to monitor servers can be a jarring experience. Putting servers in multiple environments under a single unified access and identity management solution can be challenging to set up and manage.
+
+Azure Arc simplifies governance and management of resources such as servers, kubernetes clusters and data services across heterogeneous environments. By projecting hybrid resources as native Azure resources, Azure Arc provides a single pane of control for management of native as well as hybrid resources. Azure Arc brings native as well as hybrid resources under a single unified RBAC solution.
+
+
+
     Deploy-Nsg-FlowLogs
     Deploy-Resource-Diag
     Deploy-Sql-AuditingSettings
