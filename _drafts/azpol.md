@@ -246,15 +246,22 @@ Azure Log Analytics enables enterprises to store and manage logs from multiple s
 
 *Deploy-Log-Analytics* policy creates Azure Log Analytics Workspace which acts as a repository to store log data. An Azure Automation Account is also created and linked with Log Analytics Workspace for automating tasks or deploying Azure Monitor Solutions which may have dependency on Log Analytics Workspace. *Deploy-Log-Analytics* policy helps in configuring properties such as log retention period, azure region, etc.
 
-## Deploy-LX-Arc-Monitoring
+## Provision logging for Azure-Arc enabled Linux servers
 
 With IT estates spanning multiple clouds, on-premise sites and edge locations, many enterprises may be struggling to manage and govern servers which are scattered across environments and geographic locations. Using multitude of products to monitor servers can be a jarring experience. Putting servers in multiple environments under a single unified access and identity management solution can be challenging to set up and manage.
 
 Azure Arc simplifies governance and management of resources such as servers, kubernetes clusters and data services across heterogeneous environments. By projecting hybrid resources as native Azure resources, Azure Arc provides a single pane of control for management of native as well as hybrid resources. Azure Arc brings native as well as hybrid resources under a single unified RBAC solution.
 
+*Deploy-LX-Arc-Monitoring* policy helps enterprises setting up Log Analytics agent on Azure Arc enabled Linux servers. A Log Analytics Workspace is also configured to store and manage logs. When assigned successfully, policy returns the the name of Linux server(s) within the scope of policy which is configured with Log Analytics agent on it.
 
+## Enforce Network Traffic Log collection
 
-    Deploy-Nsg-FlowLogs
+While Azure Virtual Network (VNet) and Subnet provide a logical private network boundary, it is still essential to monitor the network traffic in Azure. Without proper network monitoring, enterprises are exposed to the risk of undesired or unknown traffic coming to Azure networks from compromised IP addresses. It becomes challenging to provision additional capacity for any increase in the network traffic without understanding the current traffic.
+
+Azure Network Watcher provides a way to monitor and if necessary repair any network issue related to IaaS services in Azure. Network Security Group (NSG) flow logs provides a way to capture information about network traffic traversing through NSG. Enterprises can benefit from traffic analysis & patterns, forecast future capacity needs and enforce compliance against corporate governance policies.
+
+*Deploy-Nsg-FlowLogs* policy helps in setting up Azure Network Watcher NSG flow logs. An Azure STorage Account is provisioned as repository to store NSG flow logs. *Deploy-Nsg-FlowLogs* policy also configuring the retention period to store the NSG flow logs.  
+
     Deploy-Resource-Diag
     Deploy-Sql-AuditingSettings
     Deploy-SQL-DB-Auditing
