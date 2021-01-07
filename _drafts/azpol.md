@@ -262,15 +262,22 @@ Azure Network Watcher provides a way to monitor and if necessary repair any netw
 
 *Deploy-Nsg-FlowLogs* policy helps in setting up Azure Network Watcher NSG flow logs. An Azure STorage Account is provisioned as repository to store NSG flow logs. *Deploy-Nsg-FlowLogs* policy also configuring the retention period to store the NSG flow logs.  
 
-    Deploy-Resource-Diag
-    Deploy-Sql-AuditingSettings
-    Deploy-SQL-DB-Auditing
-    Deploy-Sql-Security
-    Deploy-Sql-SecurityAlertPolicies
-    Deploy-Sql-Tde
-    Deploy-Sql-vulnerabilityAssessments
-    Deploy-vHUB
-    Deploy-VM-Backup
+## Provision at-scale network connectivity solution
+
+Network connectivity requirements for an enterprise can be complex. Constant requests for adding New sites, devices and users to ever-expanding network are very challenging to provision and manage. Network bandwidth and throughput demands by multiple touch-points within an enterprise can be very demanding.
+
+Azure Virtual WAN (vWAN) is an enterprise-grade network service aimed towards addressing any-to-any connectivity challenges. Azure vWAN provides higher aggregate throughput with network connectivity. It provides optimal routing over Azure backbone as well as a unified management experience from Azure.
+
+*Deploy-vHUB* policy helps in provisioning Azure vWAN. Enterprises can deploy a Virtual Hub which acts as a central point for connections from multiple sources and destinations. ExpressRoute, VPN gateways and Azure Firewall is also provisioned to address any-to-any network connectivity requirements.  
+
+## Deploy-VM-Backup
+
+As cloud adoption increases, enterprise face challenges of ensuring that workloads running in Azure are backed up. Conventional IT support model where app development and IT operations are managed by separate Teams, sometimes leaves the door open for unclear ownership of VM backups. In either intentional or unintentional scenario which requires VM backups for workload restoration, missing backup process can result in costly consequences.
+
+Azure Backup provides a seamless, easy and integrated option for backing up VMs running either in Azure or in on-premise sites. Azure Backup leverages cloud scale storage and frees enterprises from having to constantly procure and manage storage needed for backups. Azure Backup provides a repository to store data securely in transit as well as at-rest.
+
+ 
+
     Deploy-VM-Monitoring
     Deploy-VMSS-Monitoring
     Deploy-vNet
