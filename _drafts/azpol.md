@@ -270,17 +270,21 @@ Azure Virtual WAN (vWAN) is an enterprise-grade network service aimed towards ad
 
 *Deploy-vHUB* policy helps in provisioning Azure vWAN. Enterprises can deploy a Virtual Hub which acts as a central point for connections from multiple sources and destinations. ExpressRoute, VPN gateways and Azure Firewall is also provisioned to address any-to-any network connectivity requirements.  
 
-## Deploy-VM-Backup
+## Provision backup for Azure VMs
 
 As cloud adoption increases, enterprise face challenges of ensuring that workloads running in Azure are backed up. Conventional IT support model where app development and IT operations are managed by separate Teams, sometimes leaves the door open for unclear ownership of VM backups. In either intentional or unintentional scenario which requires VM backups for workload restoration, missing backup process can result in costly consequences.
 
 Azure Backup provides a seamless, easy and integrated option for backing up VMs running either in Azure or in on-premise sites. Azure Backup leverages cloud scale storage and frees enterprises from having to constantly procure and manage storage needed for backups. Azure Backup provides a repository to store data securely in transit as well as at-rest.
 
+**Deploy-VM-Backup** policy automatically configures Azure backup protection for Windows as well as Linux VMs. A Recovery Service Vault is configured for storing backup which securely stores data as well as provides protection against malicious deletion of backup through soft delete. A default backup policy is created and assigned with pre-configured values for backup schedule, backup retention period, etc.
+
+## Deploy-vNet
+
+It is very common to have workloads scattered across multiple subscriptions or virtual networks (VNets) in an enterprise. Without a dedicated and secure network connectivity between them, critical business applications will struggle with data exchange. An internet-based network connectivity will pose inconsistent network bandwidth and performance. Potential high network latency may impact user experience adversely.
+
+Azure Virtual Network Peering provides network connectivity between two virtual networks (VNets) over Microsoft backbone network. Azure Peering enables high-bandwidth low-latency network connectivity. Data can be exchanged securely between separate Azure subscriptions, tenants or Azure regions.
  
 
-    Deploy-VM-Monitoring
-    Deploy-VMSS-Monitoring
-    Deploy-vNet
     Deploy-vWAN
     Deploy-Windows-DomainJoin
     Deploy-WS-Arc-Monitoring
