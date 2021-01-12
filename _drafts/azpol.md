@@ -287,7 +287,13 @@ Azure Virtual Network Peering provides network connectivity between two virtual 
 
 **Deploy-vNet** policy provides a template for setting up Virtual Network Peering. A network layout expressed in ARM template definition can be passed as a parameter. *Deploy-vNet* policy will spin up Virtual Networks and configure VNet Peering between them along with dependencies such as NSG, UDR, etc.
 
-    
-    Deploy-Windows-DomainJoin
+## Enforce Windows VMs to join Domain at startup
+
+Enterprises have been using domain joined VMs for a consistent management experience. When operations such as corporate password policy, central authentication, etc. are created as part of domain policies, a VM which does not join the domain, is exposed to risks such as weak password, inability to connect with corporate devices, applications, etc. Legacy applications which rely upon authentication protocols such as NTLM, Kerberos may face authentication issues when deployed on VMs which are not domain joined.
+
+Azure provides managed as well as un-managed solutions for implementing domain services. With self-managed Active Directory Domain Services (AD DS) in Azure, enterprises get complete control on the setup, configuration and operations just same as in an on-premise environment. Azure Active Directory Domain Service (AAD DS) takes away all the management overhead away from enterprises while still providing essential domain services.
+
+**Deploy-Windows-DomainJoin** policy ensures that any newly created Windows VM automatically joins the domain. An extension - *JsonADDomainExtension* - is deployed on the VM which uses other configuration settings such as username, domain, OUPath, etc. to ensure that VM joins the specified domain. *Deploy-Windows-DomainJoin* policy uses Azure KeyVault to manage confidential information such as domain username and password.
+
     Deploy-WS-Arc-Monitoring
     Enforce-SQL-Encryption
