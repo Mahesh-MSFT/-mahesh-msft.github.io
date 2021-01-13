@@ -10,7 +10,9 @@ However, when these pilots/PoCs make transition to production-ready enterprise a
 
 Production workloads using public IPs without proper security measures in place can increase security risks. Malicious actors can potentially use public IP as a gateway to launch an attack. Many enterprise compliance policies do not allow use of public IP just to avoid exposure to such security risks.
 
-*Deny-Public-Endpoints-for-PaaS-Services* Policy Initiative (also referred as PolicySet) helps enterprises prevent prevents Azure services getting created with a public IP address in the first place. *Deny-Public-Endpoints-for-PaaS-Services* Policy Initiative consists of following policies.
+**Deny-PublicIP** policy prevents pubic IP getting created in a scope targeted by policy. Enterprises can easily prevent Virtual Machines (VMs) getting created with public IP using this policy. 
+ 
+**Deny-Public-Endpoints-for-PaaS-Services** Policy Initiative (also referred as PolicySet) helps enterprises prevent prevents Azure services getting created with a public IP address in the first place. *Deny-Public-Endpoints-for-PaaS-Services* Policy Initiative consists of following policies.
 
     Deny-PublicEndpoint-CosmosDB
     Deny-PublicEndpoint-MariaDB
@@ -21,7 +23,7 @@ Production workloads using public IPs without proper security measures in place 
     Deny-PublicEndpoint-Storage
     Deny-PublicEndpoint-Aks
 
-Together, *Deny-Public-Endpoints-for-PaaS-Services* policies above, prevent major Azure services such as CosmosDB, SQL, AKS, etc. being exposed over a public IP.
+Together, *Deny-Public-Endpoints-for-PaaS-Services* and *Deny-PublicIP* policies, prevent major Azure services such as CosmosDB, SQL, AKS, etc. being exposed over a public IP.
 
 ## Enforce audit and log information collection
 
@@ -30,7 +32,7 @@ Lack of auditing and diagnostics information at granular level can impact operat
 It is desirable that once Azure services are provisioned, they provide detailed information about Azure platform they interact with.
 Such information can be broadly divided into logs and metrics. Each Azure service can be further categorized into its sub-components (e.g. An Azure Public IP resource has `DDoSProtectionNotifications`, `DDoSMitigationReports` and `DDoSMitigationFlowLogs` as its sub-components. Collecting diagnostic information at these sub-categories can greatly enhance auditing and debugging experience.
 
- *Deploy-Diag-LogAnalytics Policy Initiative* provides an easy option to enforce logs and metrics collection at a deeper level.Azure Policies which are part *Deploy-Diag-LogAnalytics Policy Initiative* can help enterprises gather logs and metrics as shown below.
+ **Deploy-Diag-LogAnalytics** Policy Initiative provides an easy option to enforce logs and metrics collection at a deeper level.Azure Policies which are part *Deploy-Diag-LogAnalytics Policy Initiative* can help enterprises gather logs and metrics as shown below.
 
 | Policy Name  | Log Categories           |Metrics        |
 |:-------------|:------------------------|:----------------|
@@ -91,7 +93,7 @@ Deploy-Diagnostics-Website||AllMetrics
 
 SQL databases are prevalent Azure service in most Azure deployments. Unfortunately, they are also prime target for malicious activities from within and outside of an enterprise.
 
-*Deploy-Sql-Security* Policy Initiative helps protect Azure SQL databases using a set of following policies.
+**Deploy-Sql-Security** Policy Initiative helps protect Azure SQL databases using a set of following policies.
 
 ### Encrypt SQL data at rest
 
@@ -103,7 +105,7 @@ A SQL database with TDE enabled makes it hard for malicious actors to get access
 
 As Azure SQL database deployments within an enterprise increases, it is very important that governance around ensuring Azure SQL databases are created with TDE enabled is in place.
 
-*Deploy-Sql-Tde* policy ensures that Azure SQL databases have TDE enabled.
+**Deploy-Sql-Tde** policy ensures that Azure SQL databases have TDE enabled.
 
 ### Enforce alerts for suspicious activity
 
@@ -111,7 +113,7 @@ Bad actors are on the constant lookout to access and exploit business-critical A
 
 Azure SQL database provides way to set up security alerts that can report suspicious activities on SQL server. Such alert sends email a to pre-configured email addresses and optionally to Azure subscription admins and owners.
 
-*Deploy-Sql-SecurityAlertPolicies* helps to enforce enabling of security alerts on Azure SQL databases. Enterprise can benefit from identifying malicious activities such as SQL injection attack, brute force attack, etc. though these alert. Security alerts provide detailed information about every incident. This detailed information is surfaced in Azure portal as well as email message triggered.
+**Deploy-Sql-SecurityAlertPolicies** helps to enforce enabling of security alerts on Azure SQL databases. Enterprise can benefit from identifying malicious activities such as SQL injection attack, brute force attack, etc. though these alert. Security alerts provide detailed information about every incident. This detailed information is surfaced in Azure portal as well as email message triggered.
 
 ### Enforce audit trail of operations
 
@@ -119,7 +121,7 @@ A business-critical Azure SQL database can be subject to a large number of DML (
 
 Enabling SQL Auditing can help in gathering important information about all database activities. Its also a requirement for many industry/regional regulatory compliance requirements. SQL Auditing helps generating and reporting audit trail of database events.
 
-*Deploy-Sql-AuditingSettings* helps in enforcing Azure SQL Database Auditing. This policy audits and reports key database events such as ownership changes, successful/failed logins, role membership changes, schema changes, etc. Enterprises can use this policy and audit trail it generates to gain rich insights into database operations and comply with industry/regional regulatory requirements.
+**Deploy-Sql-AuditingSettings** helps in enforcing Azure SQL Database Auditing. This policy audits and reports key database events such as ownership changes, successful/failed logins, role membership changes, schema changes, etc. Enterprises can use this policy and audit trail it generates to gain rich insights into database operations and comply with industry/regional regulatory requirements.
 
 ### Enforce evaluation against proven best practices
 
@@ -127,7 +129,7 @@ Throughout it's lifecycle, Azure SQL database undergoes very large number of sch
 
 Azure SQL database has built-in vulnerability assessment service.  State of Azure SQL database through the lense of Microsoft's best practices for SQL database can be evaluated using vulnerability assessment. A vulnerability assessment scan identifies database and server level security risks. A remediation task in applicable scenario may be also generated to fix the vulnerability.
 
-*Deploy-Sql-vulnerabilityAssessments* policy ensures that Azure SQL databases are configured with vulnerability assessment. The assessment scans are performed periodically and reports are stored in Azure storage account. Pre-defined email address is used to share the results of periodic scan results for reporting purposes.
+**Deploy-Sql-vulnerabilityAssessments** policy ensures that Azure SQL databases are configured with vulnerability assessment. The assessment scans are performed periodically and reports are stored in Azure storage account. Pre-defined email address is used to share the results of periodic scan results for reporting purposes.
 
 ## Protect against intentional/unintentional secret deletion
 
@@ -135,7 +137,7 @@ Azure Key Vault is a service to store confidential information such as keys, cer
 
 Azure Key Vault provides protection against intentional or unintentional deletion of contents stored inside it through soft-delete feature. When soft-delete is enabled, deleted keys will be retained for a pre-configured time period. If the delete operation was unintentional then deleted key can be restored within pre-configured time window. If the delete operation was intentional then key content can be deleted until an additional *purge* operation is performed - typically by someone with higher privileges.
 
-*Append-KV-SoftDelete* policy ensures that Azure Key vault is enabled with soft-delete feature by default. Enterprises get better control on deletion of Azure Key Vault content for unintentional operations. *Append-KV-SoftDelete* policy provides an additional security layer for malicious deletion of Azure Key Vault content.
+**Append-KV-SoftDelete** policy ensures that Azure Key vault is enabled with soft-delete feature by default. Enterprises get better control on deletion of Azure Key Vault content for unintentional operations. *Append-KV-SoftDelete* policy provides an additional security layer for malicious deletion of Azure Key Vault content.
 
 ## Enforce Web Application Firewall (WAF)
 
@@ -143,9 +145,11 @@ Web applications running on Azure are potential targets of number of malicious a
 
 Azure Application Gateway Web Application Firewall (WAF) provides protection against common attacks on web applications. It implements Core Rule Set (CRS) 3.1, 3.0 or 2.2.9 as recommended by the Open Web Application Security Project (OWASP). WAF policies can be associated with Azure Application Gateway either in *Prevention* or *Detection* mode.
 
-*Deny-AppGW-Without-WAF* policy helps in preventing potential misconfiguration on Azure Application Gateway. It enforces Azure Application Gateway can't be created without a Web Application Firewall (WAF). Web Applications running on Azure and using Azure Application Gateway are guaranteed to be protected by Web Application Firewall (WAF) on Azure Application Gateway.
+**Deny-AppGW-Without-WAF** policy helps in preventing potential misconfiguration on Azure Application Gateway. It enforces Azure Application Gateway can't be created without a Web Application Firewall (WAF). Web Applications running on Azure and using Azure Application Gateway are guaranteed to be protected by Web Application Firewall (WAF) on Azure Application Gateway.
 
-## Deny-ERPeering
+## Deny-VNetPeering
+
+
 
 ## Prevent IP forwarding on VMs
 
@@ -153,7 +157,7 @@ IP forwarding enables Azure VM to route traffic it receives to other destination
 
 Azure provides an option to configure IP forwarding on Virtual Machines (VMs). This enables specialized softwares such as firewalls, load balancers, etc. to be deployed via Azure Marketplace. Any application that may need to use these services, can use them via Azure Marketplace transaction.
 
-However, outside of specific needs, IP forwarding on VMs may become a security liability. *Deny-IP-forwarding* policy helps in preventing VMs acting as IP forwarding routers. This policy is explicitly applied at landing zone scope. VMs in landing zone should be final destinations for user requests. Any routing should be implemented in the connectivity subscriptions.
+However, outside of specific needs, IP forwarding on VMs may become a security liability. **Deny-IP-forwarding** policy helps in preventing VMs acting as IP forwarding routers. This policy is explicitly applied at landing zone scope. VMs in landing zone should be final destinations for user requests. Any routing should be implemented in the connectivity subscriptions.
 
 ## Enforce centralized DNS record management
 
@@ -161,9 +165,7 @@ Azure Private DNS Zones help create and manage DNS records for Azure resources. 
 
 Azure Private DNS Zone can be deployed centrally for easier management of DNS records. Azure Virtual Network linked with Azure Private Zone can potentially run domain controllers which facilitates streamlined connectivity from on-premise sites. Azure services which support Private Link/Endpoint can leverage centrally managed Azure Private Zone and prevent having to create them per application deployment.
 
-*Deny-Private-DNS-Zones* policy helps in preventing creation of Azure Private DNS Zone in the scope over which it is applied. Enterprises can view compliance status against this policy even when the policy enforcement is disabled. *Deny-Private-DNS-Zones* policy helps in streamlining connectivity from on-premise sites as well as access to Azure PaaS services using Private Link/Endpoint. 
-
-## Deny-PublicIP
+**Deny-Private-DNS-Zones** policy helps in preventing creation of Azure Private DNS Zone in the scope over which it is applied. Enterprises can view compliance status against this policy even when the policy enforcement is disabled. *Deny-Private-DNS-Zones* policy helps in streamlining connectivity from on-premise sites as well as access to Azure PaaS services using Private Link/Endpoint.
 
 ## Enforce network traffic control
 
@@ -171,7 +173,7 @@ An Azure Virtual Network (VNet) can be segmented into multiple Subnets. By defau
 
 Azure Network Security Group (NSG) helps is filtering incoming traffic to and from a subnet. NSGs can allow or deny network traffic based on stateful packet inspection. Any resources inside subnet can receive traffic from only allowed IP address range(s).
 
-*Deny-Subnet-Without-Nsg* policy ensures that every subnet has a NSG associated with it. A combination of subnet and NSG ensures that a default set of rules controls traffic to and from a subnet. Enterprises can add/modify rules to control traffic further based on the needs.
+**Deny-Subnet-Without-Nsg** policy ensures that every subnet has a NSG associated with it. A combination of subnet and NSG ensures that a default set of rules controls traffic to and from a subnet. Enterprises can add/modify rules to control traffic further based on the needs.
 
 ## Detect and protect against security threats by using Azure Security Center
 
@@ -179,7 +181,7 @@ An Azure subscription can hold multiple types of resource (e.g. VMs, Container I
 
 Azure Security Center is Azure's native security management system which assesses Azure resources for their security posture against security best practices.  Azure security center helps to detect and prevent threats against data and application services. With multiple integration points, Azure Security center can be deployed very quickly.
 
-*Deploy-ASC-Standard* policy helps in enrolling Azure subscription(s) with Azure Security Center Standard mode which enables those subscription(s) to start getting security threat detection and protection capabilities offered by Azure Security Center. *Deploy-ASC-Standard* policy also ensures that key Azure services such as VMs, Storage Accounts and seven other services are automatically covered by Azure Security Center. Enterprises benefits from continuous security assessment and actionable recommendations should there be any deviation from security best practice.
+**Deploy-ASC-Standard** policy helps in enrolling Azure subscription(s) with Azure Security Center Standard mode which enables those subscription(s) to start getting security threat detection and protection capabilities offered by Azure Security Center. *Deploy-ASC-Standard* policy also ensures that key Azure services such as VMs, Storage Accounts and seven other services are automatically covered by Azure Security Center. Enterprises benefits from continuous security assessment and actionable recommendations should there be any deviation from security best practice.
 
 ## Protect against ransomware attacks and other data-loss related issues
 
@@ -187,7 +189,7 @@ Increasing frequency of ransomware & intrusion attacks pose yet another concern 
 
 Azure Backup provides protection for Azure VMs against accidental or intentional data destruction. Azure Backups are easy to configure and scale. Data is backed up in Azure Recovery Vault for easy management and protection.
 
-*Deploy-AzureBackup-on-VM* policy protects Azure VMs by configuring Azure Backup for them. *Deploy-AzureBackup-on-VM* policy automatically provisions Azure Recovery Services Vault and creates backup container for every Azure VM that gets created.
+**Deploy-AzureBackup-on-VM** policy protects Azure VMs by configuring Azure Backup for them. *Deploy-AzureBackup-on-VM* policy automatically provisions Azure Recovery Services Vault and creates backup container for every Azure VM that gets created.
 
 ## Protect against DDoS attacks
 
@@ -195,7 +197,7 @@ Any publically reachable Azure resource is exposed to threat of Distributed Deni
 
 Azure DDoS Protection service defends Azure resources against DDoS attacks. Azure DDoS Protection continuously monitors incoming traffic to identify potential indications of a DDoS attack. Enterprises benefit from working with Microsoft's DDoS Rapid Response (DRR) team during an active attack.
 
-*Deploy-DDoSProtection* policy automatically provisions Azure DDoS Standard plan on all Azure subscriptions under its scope. *Deploy-DDoSProtection* policy enables enterprises to select the Azure regions to be covered as part of the assignment.  
+**Deploy-DDoSProtection** policy automatically provisions Azure DDoS Standard plan on all Azure subscriptions under its scope. *Deploy-DDoSProtection* policy enables enterprises to select the Azure regions to be covered as part of the assignment.  
 
 ## Auto-provision Private Link/Endpoint with Private DNS Zone
 
@@ -220,7 +222,7 @@ Fragmented firewall rules can lead to uncontrolled and ambiguous network traffic
 
 Azure Firewall Policy helps to define basic minimum set of rules applicable throughout an enterprise. Application specific policy can inherit from basic rules to allow creation of hierarchial rules to meet both enterprise as well as application specific firewall rule requirements. When rules are configured through policies then they can be centrally managed and monitored.
 
-*Deploy-FirewallPolicy* policy enables enterprises to define Azure Firewall policies centrally. Enterprises are in control of defining priority as well as rules to meet their network traffic routing requirements. By defining firewall policies centrally, enterprises can apply them to either Azure Virtual WAN or Azure Hub and Spoke Networking topology depending upon needs.
+**Deploy-FirewallPolicy** policy enables enterprises to define Azure Firewall policies centrally. Enterprises are in control of defining priority as well as rules to meet their network traffic routing requirements. By defining firewall policies centrally, enterprises can apply them to either Azure Virtual WAN or Azure Hub and Spoke Networking topology depending upon needs.
 
 ## Provision Hub and Spoke Network topology
 
@@ -228,7 +230,7 @@ As more workloads starts to get deployed in Azure, they start to use a common se
 
 Azure Hub and Spoke network topology streamlines the network connectivity needs. A Hub Virtual Network (VNet) can host the shared services while spoke VNets can host application specific Azure resources. Hub and Spoke VNets are connected with each other via VNet Peering. Hub and Spoke network topology promotes clean network design, easier management and cost optimization.
 
-*Deploy-HUB* policy auto-provisions Hub VNet with Azure Firewall, VPN Gateway and ExpressRoute (ER) Gateway. Enterprises can configure all the options for Firewall, VPN and ER gateway as part of the policy assignment. *Deploy-HUB* policy simplifies the process to deploy Azure Hub and Spoke network topology.
+**Deploy-HUB** policy auto-provisions Hub VNet with Azure Firewall, VPN Gateway and ExpressRoute (ER) Gateway. Enterprises can configure all the options for Firewall, VPN and ER gateway as part of the policy assignment. *Deploy-HUB* policy simplifies the process to deploy Azure Hub and Spoke network topology.
 
 ## Provision default configuration for Azure Monitor
 
@@ -236,7 +238,7 @@ Inability to identify and visualize relationship between Azure platform, Azure s
 
 Azure Monitor Logs along with Azure Log Analytics Workspace help enterprises in dealing with critical conditions using Alerts. Combined together, Azure Monitor Logs and Log Analytics Workspace, empower enterprises to visualize and interact with rich set of log information through dashboards, workbooks and Power BI. Enterprises can use Azure Monitor Logs and Log Analytics Workspace together to configure auto-scaling on VMs to automatically adding or removing instances.
 
-*Deploy-LA-Config* policy helps in configuring Log Analytics Workspace with Azure Monitor. *Deploy-LA-Config* policy deploys pre-packaged dashboard reports referred as Azure Monitor Solutions for specific Azure services such as Azure SQL Database or Azure Active Directory. *Deploy-LA-Config* policy also configures data sources such as Linux and Windows VM Performance metrics with Azure Monitor.
+**Deploy-LA-Config** policy helps in configuring Log Analytics Workspace with Azure Monitor. *Deploy-LA-Config* policy deploys pre-packaged dashboard reports referred as Azure Monitor Solutions for specific Azure services such as Azure SQL Database or Azure Active Directory. *Deploy-LA-Config* policy also configures data sources such as Linux and Windows VM Performance metrics with Azure Monitor.
 
 ## Enable Log Storage and Querying
 
@@ -244,7 +246,7 @@ If not carefully planned, log information coming from multiple sources is Azure 
 
 Azure Log Analytics enables enterprises to store and manage logs from multiple sources efficiently. Querying the data stored in Azure Log Analytics for trend or pattern analysis is very easy with Azure Log Analytics. Alerts or interactive reports can be created using Azure Log Analytics queries.
 
-*Deploy-Log-Analytics* policy creates Azure Log Analytics Workspace which acts as a repository to store log data. An Azure Automation Account is also created and linked with Log Analytics Workspace for automating tasks or deploying Azure Monitor Solutions which may have dependency on Log Analytics Workspace. *Deploy-Log-Analytics* policy helps in configuring properties such as log retention period, azure region, etc.
+**Deploy-Log-Analytics** policy creates Azure Log Analytics Workspace which acts as a repository to store log data. An Azure Automation Account is also created and linked with Log Analytics Workspace for automating tasks or deploying Azure Monitor Solutions which may have dependency on Log Analytics Workspace. *Deploy-Log-Analytics* policy helps in configuring properties such as log retention period, azure region, etc.
 
 ## Provision logging for Azure-Arc enabled Linux servers
 
@@ -252,7 +254,7 @@ With IT estates spanning multiple clouds, on-premise sites and edge locations, m
 
 Azure Arc simplifies governance and management of resources such as servers, kubernetes clusters and data services across heterogeneous environments. By projecting hybrid resources as native Azure resources, Azure Arc provides a single pane of control for management of native as well as hybrid resources. Azure Arc brings native as well as hybrid resources under a single unified RBAC solution.
 
-*Deploy-LX-Arc-Monitoring* policy helps enterprises setting up Log Analytics agent on Azure Arc enabled Linux servers. A Log Analytics Workspace is also configured to store and manage logs. When assigned successfully, policy returns the the name of Linux server(s) within the scope of policy which is configured with Log Analytics agent on it.
+**Deploy-LX-Arc-Monitoring** policy helps enterprises setting up Log Analytics agent on Azure Arc enabled Linux servers. A Log Analytics Workspace is also configured to store and manage logs. When assigned successfully, policy returns the the name of Linux server(s) within the scope of policy which is configured with Log Analytics agent on it.
 
 ## Enforce Network Traffic Log collection
 
@@ -260,7 +262,7 @@ While Azure Virtual Network (VNet) and Subnet provide a logical private network 
 
 Azure Network Watcher provides a way to monitor and if necessary repair any network issue related to IaaS services in Azure. Network Security Group (NSG) flow logs provides a way to capture information about network traffic traversing through NSG. Enterprises can benefit from traffic analysis & patterns, forecast future capacity needs and enforce compliance against corporate governance policies.
 
-*Deploy-Nsg-FlowLogs* policy helps in setting up Azure Network Watcher NSG flow logs. An Azure STorage Account is provisioned as repository to store NSG flow logs. *Deploy-Nsg-FlowLogs* policy also configuring the retention period to store the NSG flow logs.  
+**Deploy-Nsg-FlowLogs** policy helps in setting up Azure Network Watcher NSG flow logs. An Azure STorage Account is provisioned as repository to store NSG flow logs. *Deploy-Nsg-FlowLogs* policy also configuring the retention period to store the NSG flow logs.  
 
 ## Provision at-scale network connectivity solution
 
@@ -287,13 +289,10 @@ Azure Virtual Network Peering provides network connectivity between two virtual 
 
 **Deploy-vNet** policy provides a template for setting up Virtual Network Peering. A network layout expressed in ARM template definition can be passed as a parameter. *Deploy-vNet* policy will spin up Virtual Networks and configure VNet Peering between them along with dependencies such as NSG, UDR, etc.
 
-## Enforce Windows VMs to join Domain at startup
+## Enforce Windows VMs to join AD Domain
 
 Enterprises have been using domain joined VMs for a consistent management experience. When operations such as corporate password policy, central authentication, etc. are created as part of domain policies, a VM which does not join the domain, is exposed to risks such as weak password, inability to connect with corporate devices, applications, etc. Legacy applications which rely upon authentication protocols such as NTLM, Kerberos may face authentication issues when deployed on VMs which are not domain joined.
 
 Azure provides managed as well as un-managed solutions for implementing domain services. With self-managed Active Directory Domain Services (AD DS) in Azure, enterprises get complete control on the setup, configuration and operations just same as in an on-premise environment. Azure Active Directory Domain Service (AAD DS) takes away all the management overhead away from enterprises while still providing essential domain services.
 
 **Deploy-Windows-DomainJoin** policy ensures that any newly created Windows VM automatically joins the domain. An extension - *JsonADDomainExtension* - is deployed on the VM which uses other configuration settings such as username, domain, OUPath, etc. to ensure that VM joins the specified domain. *Deploy-Windows-DomainJoin* policy uses Azure KeyVault to manage confidential information such as domain username and password.
-
-    Deploy-WS-Arc-Monitoring
-    Enforce-SQL-Encryption
