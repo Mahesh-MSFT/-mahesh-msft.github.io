@@ -1,6 +1,6 @@
-# How does Enterprise-scale Landing Zone Policies help?
+# How does Azure Policies in Enterprise-scale Landing Zone help?
 
-Following are the Azure Policies configured by Enterprise Scale Landing Zone.
+Azure Policy makes it possible to *codify* enterprise governance requirements. Enterprise Scale Landing zone implementation extensively uses Azure Policies to make it easy to put into practice various guard rail measures necessary to meet operational and management requirements.  Azure Policies in Enterprise Scale landing zone are discussed in details below.
 
 ## Prevent Public IP based services
 
@@ -23,7 +23,7 @@ Production workloads using public IPs without proper security measures in place 
     Deny-PublicEndpoint-Storage
     Deny-PublicEndpoint-Aks
 
-Together, *Deny-Public-Endpoints-for-PaaS-Services* and *Deny-PublicIP* policies, prevent major Azure services such as CosmosDB, SQL, AKS, etc. being exposed over a public IP.
+*Deny-Public-Endpoints-for-PaaS-Services* and *Deny-PublicIP* policies prevent major Azure services such as VMs, CosmosDB, SQL, AKS, etc. being exposed over a public IP.
 
 ## Enforce audit and log information collection
 
@@ -147,7 +147,7 @@ Azure Application Gateway Web Application Firewall (WAF) provides protection aga
 
 **Deny-AppGW-Without-WAF** policy helps in preventing potential misconfiguration on Azure Application Gateway. It enforces Azure Application Gateway can't be created without a Web Application Firewall (WAF). Web Applications running on Azure and using Azure Application Gateway are guaranteed to be protected by Web Application Firewall (WAF) on Azure Application Gateway.
 
-## Deny-VNetPeering
+## 
 
 
 
@@ -231,6 +231,8 @@ As more workloads starts to get deployed in Azure, they start to use a common se
 Azure Hub and Spoke network topology streamlines the network connectivity needs. A Hub Virtual Network (VNet) can host the shared services while spoke VNets can host application specific Azure resources. Hub and Spoke VNets are connected with each other via VNet Peering. Hub and Spoke network topology promotes clean network design, easier management and cost optimization.
 
 **Deploy-HUB** policy auto-provisions Hub VNet with Azure Firewall, VPN Gateway and ExpressRoute (ER) Gateway. Enterprises can configure all the options for Firewall, VPN and ER gateway as part of the policy assignment. *Deploy-HUB* policy simplifies the process to deploy Azure Hub and Spoke network topology.
+
+**Deny-VNetPeering** policy prevents two Virtual Networks (VNets) peered with each other as they can communicate with each other via Huv VNet. By forcing VNets to communicate with each other through Hub makes it possible to control and monitor network connections. Network topology is simplified from overall maintenance perspective as well. 
 
 ## Provision default configuration for Azure Monitor
 
