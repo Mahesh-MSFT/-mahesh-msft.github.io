@@ -32,7 +32,7 @@ Each deployment option is discussed in detail below.
 
 Diagram below depicts deployment in a single Azure region.
 
-![single-region deployment](/assets/oraclewaf/1Region.emf){type = "image/emf"}
+![single-region deployment](/assets/oraclewaf/1Region.png)
 
 Key highlights of this architecture are as discussed below.
 
@@ -43,6 +43,7 @@ Key highlights of this architecture are as discussed below.
 
 Diagram below depicts deployment across multiple Azure region.
 
+![multi-region deployment](/assets/oraclewaf/2Region.png)
 
 Key highlights of this architecture are as discussed below.
 
@@ -52,6 +53,8 @@ Key highlights of this architecture are as discussed below.
 ## Multi-region deployment (Far Sync)
 
 Diagram below depicts deployment across multiple Azure region using Oracle Data Guard Far Sync synchronization.
+
+![multi-region far sync deployment](/assets/oraclewaf/2RegionFarSync.png)
 
 Key highlights of this architecture are as discussed below.
 
@@ -84,23 +87,23 @@ Following are key guidelines to ensure Oracle workloads are reliable.
 
 Security spans multiple areas such as infrastructure, application, data, identity, etc. of an Oracle workload. Guidelines provided below provide holistic approach to infuse security protection and detection capabilities into Oracle workload.
 
-1. Azure Virtual Network with multiple subnets will be used to deploy the solution. Each subnet will be configured with Network Security Group (NSG) rules to control east-west traffic.
-2. Azure DdoS protection will be applied on Azure VNet mitigating DdoS attack risk.
-3. Azure Network Watcher is used to monitor, diagnose, view metrics, and enable or disable logs for resources in Azure VNet.
-4. Azure Active Directory (AD) will be used with Azure AD Role Based Access Control (RBAC) to limit access to application components.
-5. Azure Key Vault will be used to store sensitive information such as passwords, connectionstrings, etc.
-6. Azure Security Center protects server and application vulnerabilities on them. It helps to quickly identify threats, streamline threat investigation, and help automate remediation.
-7. Azure Bastion will be used to connect with Application and Database VMs.
-8. Azure AD Privileged Identity Management (PIM) solution will provide just-in-time privileged access to Azure resources and Azure AD. It will also provide audit trail of what admin users are doing with their administrator privileges.
-9. Azure Firewall will provide capability to control and monitor outbound internet traffic from VMs and other solution components.
-10. Azure Disk Encryption for Managed Disk will provide encryption at rest.
+1. An Azure Virtual Network (VNet) can be segmented into multiple Subnets. By default, there is no network access control between these subnets. Lack of network access control can result in unsolicited network traffic arriving inside a subnet. Azure **Network Security Group (NSG)** helps is filtering incoming traffic to and from a subnet. NSGs can allow or deny network traffic based on stateful packet inspection. Any resources inside subnet can receive traffic from only allowed IP address range(s). Configuring NSGs helps in controlling East-West traffic between Oracle application components.
+2. Any publically reachable Azure resource is exposed to threat of Distributed Denial of Service (DDoS) attack. A successful DDoS attack can impact the Oracle workload availability to it's intended users. A prolonged DDoS attack can exhaust all available resources and result in downtime for mission-critical Oracle application(s). **Azure DDoS Protection** service defends Azure resources against DDoS attacks. Azure DDoS Protection continuously monitors incoming traffic to identify potential indications of a DDoS attack. Oracle workloads benefit from working with Microsoft's DDoS Rapid Response (DRR) team during an active attack. Azure DdoS protection will be applied on Azure VNet that hosts all Oracle application components mitigating DdoS attack risk.
+3. Without proper Azure VNet network monitoring, Oracle workloads are exposed to the risk of undesired or unknown traffic coming to Azure VNet from compromised IP addresses. **Azure Network Watcher** provides a way to monitor and if necessary repair any network issue related to Oracle application component VMs. Azure Network Watcher is used to monitor, diagnose, view metrics, and enable or disable logs for Oracle application components inside Azure VNet.
+4. Uncontrolled access to Oracle application components and its underlying infrastructure can result in unexpected results. **Azure Active Directory (AAD)** helps in providing controlled access to users, groups and other security principals. Azure Active Directory (AD) will be used with Azure AD Role Based Access Control (RBAC) to limit access to Oracle application components and it's underlying Azure services.
+5. Oracle application web front end uses Oracle connectionstring to connect with Oracle database. In many scenarios, this connectionstring contains sensitive details like user name and password. Malicious actors can use these credentials to potentially access database offline. **Azure Key Vault** provides a secure way to store and access Oracle credentials. Oracle web front end can securely access credentials stored in Azure Key Vault for establishing connection with Oracle database.
+6. An Oracle workload on Azure contains multiple resources (VMs, Disks, etc.). These resources are exposed to risks such as malware/unwanted software installation, uncontrolled access to management ports on a VM, etc. With sophisticated security attacks, detecting security vulnerabilities and protecting Oracle workload is extremely challenging. **Azure Security Center** is Azure's native security management system which assesses Azure resources for their security posture against security best practices. Azure security center helps to detect and prevent threats against data and application services. By using Azure Security Center, Oracle workloads benefit from continuous security assessment and actionable recommendations should there be any deviation from security best practice.
+7. Very often Oracle administrators will need to initiate RDP or SSH sessions on VMs. This need sometimes can result in assigning public IP addresses to VMs which is a security issue. **Azure Bastion** is an Azure service that provides private RDP and SSH access using VM's private IP address. By using Azure Bastion, Oracle administrators can safely and securely connect with Application and Database VMs.
+8. While Azure AD RBAC helps in controlling access to Oracle workload infrastructure, there is still a possibility of users abusing their higher administrative rights. **Azure AD Privileged Identity Management (PIM)** helps in addressing such scenarios by providing just-in-time access and many more controls to limit and audit actions by higher privilege users. Azure AD PIM will provide just-in-time privileged access to Azure resources running Oracle workloads. It will also provide audit trail of what admin users are doing with their administrator privileges.
+9. While Azure NSGs controls network layer traffic, Oracle workloads may still be exposed to unwanted application level traffic. **Azure Firewall** provides control over network and application traffic for both ingress as well as egress traffic. By using Azure Firewall, Oracle workload gains capability to control and monitor outbound internet traffic from VMs and other solution components.
+10. Oracle database uses Azure Disks which if not encrypted can result in data breach. **Azure Disk Encryption** ensures that data on disks is encrypted. Oracle database can securely use Azure Disk Encryption for Managed Disk to provide encryption at rest.
 
 ### Performance efficiency
 
 Oracle runs many most mission-critical workloads for customers. These applications are extremely performance sensitive. Guidelines discussed below enable Oracle workloads to meet performance expectations.
 
-1. Azure Managed Disks with premium SSD supports upto 20,000 IOPS and 900 MB/s of throughput.
-2. Azure VMs with Accelerated Networking can provide up to 30Gbps of network throughput.
+1. Poor disk performance has direct impact on Oracle database. User experience is adversely affected with sluggish database performance.**Azure Managed Disk** offers HDD or SSD backed storage solution to be appropriately used based on Oracle database performance requirements. Azure Managed Disks with *premium SSD* supports upto 20,000 IOPS and 900 MB/s of throughput which can be optimum performance needed for most Oracle databases.
+2. Network throughput of VMs running  various Oracle application components can be an important factor driving user experience. Azure VMs with **Accelerated Networking** can provide up to 30Gbps of network throughput. 
 3. Azure VMSS running Web server VM instances are placed in Proximity Placement Group which co-locates VM instances and reduced inter-VM latency.
 4. Estimate Oracle VM size based on CPU, memory, and I/O usage from the AWR report.
 5. Configure Azure Disk with host caching as ReadOnly for higher throughput.
