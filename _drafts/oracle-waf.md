@@ -4,11 +4,11 @@ Oracle databases and applications run some of the mission critical workloads for
 
 Running such mission-critical applications on Azure entails following best practices and proven technical guidance. Microsoft Azure Well-Architected Framework (WAF) is a collection of assessment, actionable recommendations and deep technical guidance. Using Azure Well-Architected Framework, mission-critical workloads can be confidently developed and deployed on Azure. WAF helps improving the architecture quality of Azure workloads across five keys tenets. These five tenets are as below.
 
+1. Reliability
+1. Security
+1. Performance efficiency
+1. Operational Excellence
 1. Cost Optimization
-2. Operational Excellence
-3. Performance efficiency
-4. Reliability
-5. Security
 
 This article discusses developing and deploying Oracle workloads on Azure using Azure Well-Architected guidelines.
 
@@ -24,31 +24,34 @@ There are multiple deployment options available as listed below.
 
 1. Single-region deployment
 1. Multi-region deployment
-1. Multi-region deployment (FAR SYNC)
+1. Multi-region deployment (Far Sync)
 
 Each deployment option is discussed in detail below.
 
-## Single region deployment
+## Single-region deployment
 
 Diagram below depicts deployment in a single Azure region.
+
+![single-region deployment](/assets/oraclewaf/1Region.emf){type = "image/emf"}
 
 Key highlights of this architecture are as discussed below.
 
 1. This deployment uses a single Azure region.
 1. It is suitable workloads with balanced costs and reliability.
 
-## Multi region deployment
+## Multi-region deployment
 
 Diagram below depicts deployment across multiple Azure region.
+
 
 Key highlights of this architecture are as discussed below.
 
 1. This deployment uses multiple Azure regions.
 1. It is suitable for workloads demanding very high reliability.
 
-## Multi-region deployment (FAR SYNC)
+## Multi-region deployment (Far Sync)
 
-Diagram below depicts deployment across multiple Azure region using Oracle Data Gurad FARSYNC synchronization.
+Diagram below depicts deployment across multiple Azure region using Oracle Data Guard Far Sync synchronization.
 
 Key highlights of this architecture are as discussed below.
 
@@ -63,21 +66,23 @@ Each of the five tenets of well-Architected Framework is discussed in detail bel
 
 ### Reliability
 
-Reliability of Oracle workload refers to it's ability to continue to operate after transient or prolonged failures. Workload is expected to remain available to it's end users when they need it.
+Reliability of an Oracle workload refers to it's ability to continue to operate after transient or prolonged failures. Workload is expected to remain available to it's end users when they need it.
 
 Following are key guidelines to ensure Oracle workloads are reliable.
 
-1. Azure Availability Zones inside Azure Region are used so that single zone failures can be tolerated.
-2. User requests are routed through an Azure Load Balancer which can be configured in zone-redundant configuration to sustain a zone failure inside Azure region.
-3. JBoss server runs on Azure VM Scaleset (VMSS) which uses multiple VM instances. Azure VMSS is also configured in zone-redundant configuration to sustain zone failure inside Azure region.
-4. Oracle Active Data Guard will provide database reliability in case of a single Azure Availability Zone failure.
-5. In multi-region deployment, Azure Paired region will ensure that planned and unplanned maintenance activities are not performed at the same time improving reliability of the platform.
-6. In multi-region deployment, Azure Front Door will provide a region redundant service in place of Azure Application Gateway.
-7. In multi-region deployment, Oracle Standby instance running in a separate region will provide protection against primary Azure region failure.
-8. If used, FAR SYNC instance will ensure zero data loss and coordinate with standby server to promote a primary database server.
-9. Primary Oracle Database and FARSYNC instances, if used,  are deployed in separate availability zone providing protection against regional failure.
+1. A power outage or cooling failure in an Azure data center can bring down a Virtual Machine (VM) running any Oracle workload component. **Azure Availability Zones** inside an Azure Region use independent power, cooling, connectivity, etc. for data centers in them. By using Azure Services that support Availability Zones, Oracle workloads can continue to operate even if there are outages in a single data center or Availability Zone.
+2. Using a single public IP address assigned to a Azure VM running web front-end can result in failed user requests if VM becomes unavailable. Azure Load Balancer can route incoming user requests on it's public IP address to multiple VMs acting as backend. By using ***zone-redundant* Azure Load Balancer**, user requests can be accepted not only when an Azure Availability Zone becomes unavailable but also when any of the multiple backend VMs behind load balancer becomes unavailable.
+3. A single instance on Azure VM running an Oracle application component can easily become a single point of failure or a bottleneck. Azure Virtual Machine Scale Set (VMSS) combines multiple VM instances for easier scaling as well as higher availability. BY running JBoss server on ***zone-redundant* Azure VMSS**, Oracle workloads can not only sustain zone failures inside Azure region but also scale to cater to higher user requests.
+4. Running an Oracle database on a single VM can result in data loss when that VM becomes unavailable. **Oracle Active Data Guard** runs primary and standby database instances to provide database reliability. By running primary and standby database instances across 2 Availability Zones, Oracle workloads are protected from single Azure Availability Zone failure.
+5. During catastrophic natural disasters, entire Azure region may become unavailable. Also, if not carefully planned, Azure updates may run simultaneously in two Azure regions together impacting Oracle workload. **Azure Paired Region** will ensure that planned and unplanned maintenance activities are not performed at the same time improving reliability. At least one of the two paired regions will be prioritized for recovery in case of catastrophic disaster.
+6. Running standby Oracle database instance in Availability Zone may not be enough in scenarios where Oracle workloads demand higher reliability. Using Oracle Active Data Guard, it's possible to run ***standby* instance in Azure Paired Region**. This regional isolation will provide protection against primary Azure region failure.
+7. A regional Azure service becomes unavailable if the region in which it is deployed becomes unavailable. Global Azure services ensure that they automatically fail-over to nearest feasible Azure region. In multi-region deployment, **Azure Front Door** will provide a region redundant service to improve reliability of mission-critical Oracle workloads.
+8. Some customers may choose superior performance from Oracle database over some amount of data loss due to synchronous replication between primary and standby database servers. **Oracle Active Data Guard Far Sync** makes it possible to have both, superior performance and high reliability together. Far Sync instance will coordinate with standby server(s) to promote a new primary database in case of existing primary database failure.
+9. Running Primary Oracle Database and Far Sync instance in the same Availability Zone may still result in workload unavailability in case of zone failures. It is possible to deploy primary database and Far Sync instance **across Availability Zones**. Deploying in separate Availability Zone provides protection against zonal failure.
 
 ### Security
+
+Security spans multiple areas such as infrastructure, application, data, identity, etc. of an Oracle workload. Guidelines provided below provide holistic approach to infuse security protection and detection capabilities into Oracle workload.
 
 1. Azure Virtual Network with multiple subnets will be used to deploy the solution. Each subnet will be configured with Network Security Group (NSG) rules to control east-west traffic.
 2. Azure DdoS protection will be applied on Azure VNet mitigating DdoS attack risk.
@@ -92,6 +97,8 @@ Following are key guidelines to ensure Oracle workloads are reliable.
 
 ### Performance efficiency
 
+Oracle runs many most mission-critical workloads for customers. These applications are extremely performance sensitive. Guidelines discussed below enable Oracle workloads to meet performance expectations.
+
 1. Azure Managed Disks with premium SSD supports upto 20,000 IOPS and 900 MB/s of throughput.
 2. Azure VMs with Accelerated Networking can provide up to 30Gbps of network throughput.
 3. Azure VMSS running Web server VM instances are placed in Proximity Placement Group which co-locates VM instances and reduced inter-VM latency.
@@ -101,10 +108,11 @@ Following are key guidelines to ensure Oracle workloads are reliable.
 7. Azure Ultra Disk provides upto 160K IOPS, 2K Mbps throughput at sub-millisecond disk latency.
 8. Oracle primary and FAR SYNC instances are in same Azure region providing lower network latency times.
 
-
 ### Operational excellence
 
-1. Azure Managed Application will help SWIFT to implement the infrastructure and provide ongoing support.
+Oracle workloads need some of the most streamlined operational processes. Such processes help keeping workloads running even when operational and management operations are performed. Guidelines discussed below help in ensuring operational excellence.
+
+1. Azure Managed Application will help to implement the infrastructure and provide ongoing support.
 2. Azure Policy provides building block to codify compliance requirements through definition and assignment.
 3. Azure Monitor enables customers with collecting, analyzing, and acting on telemetry from infrastructure as well as application.
 4. Azure ARM template will provide infrastructure-as-code services offering automated deployment and operations.
@@ -116,6 +124,9 @@ Following are key guidelines to ensure Oracle workloads are reliable.
 
 ### Cost optimization
 
+Oracle workloads can take advantage of multiple cost optimization guidelines discussed below. Customers can achieve balance between cost and quality of Oracle workloads.
+
+1. Scale down VMSS
 1. Azure Cost Management & Billing provides governance for effective cost management. It increases accountability with budgets, cost allocation, chargebacks & continuous cost optimization.
-2. Azure Reservation will provide substantial discounts on Azure VMs and Storage.
-3. Extend Azure Hybrid Usage benefits to Red Hat Enterprise Linux VMs.
+1. Azure Reservation will provide substantial discounts on Azure VMs and Storage.
+1. Extend Azure Hybrid Usage benefits to Red Hat Enterprise Linux VMs.
