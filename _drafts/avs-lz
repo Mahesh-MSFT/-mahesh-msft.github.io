@@ -1,3 +1,7 @@
+---
+driveId: 1dCm-ZLniBcSUTZGbyeNxpNU8IL6FhZeo
+---
+
 Migrating applications from on-premise data centers to Azure comes up with unique challenges and lengthy timelines.
 Azure VMware Solution offers a fastest way to migrate applications from on-premise VMware environments to Azure.
 Because the migration uses VMware native tool - HCX - for performing migration, the whole process is similar to migrating applications from one vCenter to another vCenter.
@@ -28,6 +32,6 @@ This article provides a set of six videos that provides some additional context 
 
 ![networking](/assets/videos/Networking.mp4)
 
-<video width="320" height="240" controls>
-  <source src="/assets/videos/Networking.mp4" type="video/mp4">
-</video>
+<iframe src="https://drive.google.com/file/d/1dCm-ZLniBcSUTZGbyeNxpNU8IL6FhZeo/view?usp=sharing"></iframe>
+
+{% include googleDrivePlayer.html id=page.driveId %}
