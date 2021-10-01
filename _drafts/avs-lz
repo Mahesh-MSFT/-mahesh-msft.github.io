@@ -1,0 +1,33 @@
+Migrating applications from on-premise data centers to Azure comes up with unique challenges and lengthy timelines.
+Azure VMware Solution offers a fastest way to migrate applications from on-premise VMware environments to Azure.
+Because the migration uses VMware native tool - HCX - for performing migration, the whole process is similar to migrating applications from one vCenter to another vCenter.
+While migration process is simple, once applications and VMs starts to run in Azure, they can invite multiple challenges.
+These challenges are typically around following Critical Design Areas (CDAs).
+
+1. Networking
+2. Security, Governance and Compliance
+3. Automation
+4. BCDR
+5. Management and Monitoring
+6. Identity
+
+Azure Landing Zone for Azure VMware Solution provides a prescriptive and best-practices backed guidance for each of the above CDA. Using this guidance, customers can migrate and manage applications and VMs running in Azure VMware Solution using standard operating process.
+
+Each CDA includes key design considerations and design recommendations discussed in detail below.
+
+1. Networking
+2. Security, Governance and Compliance
+3. Automation
+4. BCDR
+5. Management and Monitoring
+6. Identity
+
+This article provides a set of six videos that provides some additional context behind every design consideration and recommendation.
+
+## Networking
+
+![networking](/assets/videos/Networking.mp4)
+
+<video width="320" height="240" controls>
+  <source src="/assets/videos/Networking.mp4" type="video/mp4">
+</video>
